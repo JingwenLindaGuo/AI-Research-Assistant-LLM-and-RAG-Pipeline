@@ -31,3 +31,35 @@ def retrieve_chunks(query: str, top_k: int = 3):
         include=["documents", "metadatas"]
     )
     return results
+
+query = "What are the latest advancements in deep learning?"
+results = retrieve_chunks(query)
+for doc, meta in zip(results["documents"], results["metadatas"]):
+    print(f"Document: {doc}")
+    print(f"Source: {meta['source']}")
+
+def prepare_prompt(query: str, chunks: list):
+    """
+    Prepare a prompt by concatenating retrieved chunks.
+    """
+    context = "\n\n".join([chunk for chunk in chunks])
+    prompt = f"Use the following context to answer the query:\n\n{context}\n\nQuery: {query}\nAnswer:"
+    return prompt
+
+from langchain.llms import OpenAI
+
+def generate_answer(prompt: str):
+    """
+    Generate an answer using OpenAI GPT API.
+    """
+    llm = OpenAI(model="gpt-4o-mini", temperature=0.7)
+    return llm(prompt)
+
+def answer_query(query: str, top_k: int = 3):
+    """
+    End-to-end pipeline for answering a user query.
+    """
+    results = retrieve_chunks(query, top_k)
+    chunks = results["documents"]
+    prompt = prepare_prompt(query, chunks)
+    return generate_answer(prompt)
