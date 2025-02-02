@@ -2,11 +2,11 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
-#Load environment variables
+# Load environment variables
 load_dotenv()
 
 # Create OpenAI client with API key
-client = OpenAI(api_key=os.getenv("API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 response = client.embeddings.create(
