@@ -1,46 +1,39 @@
 import os
 from langchain_openai import OpenAIEmbeddings
 from pinecone import Pinecone
+from embedder import embed
 
 pc = Pinecone(api_key="pcsk_5DwedT_D4bc61kqQVy1LCVf3mGuVPMYRRkLhHcS58kTuL4Pz2PB3gGRwBkunivicMq8yA8")
 index = pc.Index("test")
-
-# Initialize OpenAI Embeddings (matches what Member C is using)
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 
 
 def retrieve_chunks(query: str, top_k: int = 3):
     """
     Retrieve the top-k most relevant chunks from the Pinecone vector database.
-
-    Args:
-        query (str): User query.
-        top_k (int): Number of chunks to retrieve.
-
-    Returns:
-        List[Dict]: Retrieved chunks with metadata.
     """
-    query_embedding = embeddings.embed_documents([query])[0]  # Convert query to vector
+    # Embed the query using Member C's embedder.py
+    query_embedding = embed([{"text": query}])["data"][0]["embedding"]  # ✅ Use Member C's embedder
 
     # Perform similarity search in Pinecone
     results = index.query(
-        vector=query_embedding,  # Search using the query embedding
-        top_k=top_k,  # Get the top-k most similar chunks
-        include_metadata=True  # Include metadata (e.g., document title, source)
+        vector=query_embedding,  
+        top_k=top_k,  
+        include_metadata=True  
     )
 
     # Extract results and return formatted documents
     retrieved_chunks = []
-    if "matches" in results and results["matches"]:  # Check if there are any results
+    if "matches" in results and results["matches"]:
         for match in results["matches"]:
             retrieved_chunks.append({
-                "text": match["metadata"].get("text", "No text available"),  # Handle missing data
-                "source": match["metadata"].get("source", "Unknown source")  # Handle missing metadata
+                "text": match["metadata"].get("text", "No text available"),
+                "source": match["metadata"].get("source", "Unknown source")
             })
     else:
         print("⚠️ No relevant documents found in Pinecone.")
 
     return retrieved_chunks
+
 
 
 # Test retrieval function
