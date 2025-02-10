@@ -5,9 +5,10 @@ from Embedder import embed
 from langchain_openai import ChatOpenAI
 
 
-pc = Pinecone(api_key="pcsk_5DwedT_D4bc61kqQVy1LCVf3mGuVPMYRRkLhHcS58kTuL4Pz2PB3gGRwBkunivicMq8yA8")
-index = pc.Index("test")
+pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
+index_name = "test"
+index = pc.Index(index_name)  
 
 def retrieve_chunks(query: str, top_k: int = 3):
     """
@@ -21,7 +22,8 @@ def retrieve_chunks(query: str, top_k: int = 3):
     results = index.query(
         vector=query_embedding,  
         top_k=top_k,  
-        include_metadata=True  
+        include_metadata=True,
+        namespace="test"
     )
 
     # Extract results and return formatted documents
@@ -38,15 +40,6 @@ def retrieve_chunks(query: str, top_k: int = 3):
     return retrieved_chunks
 
 
-
-# Test retrieval function
-query = "What are the latest advancements in deep learning?"
-results = retrieve_chunks(query, top_k=3)
-
-for result in results:
-    print(f"Chunk: {result['text']}")
-    print(f"Source: {result['source']}")
-    print("-" * 50)
 
 
 def prepare_prompt(query: str, retrieved_chunks: list):
@@ -92,7 +85,7 @@ def answer_query(query: str, top_k: int = 3):
 
 
 # Test full pipeline
-query = "Summarize the latest research in natural language processing."
+query = "Tell me about the history of Apple Inc."
 answer = answer_query(query, top_k=3)
 print("Generated Answer:")
 print(answer)
