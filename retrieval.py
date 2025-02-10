@@ -1,7 +1,9 @@
 import os
 from langchain_openai import OpenAIEmbeddings
 from pinecone import Pinecone
-from embedder import embed
+from Embedder import embed
+from langchain_openai import ChatOpenAI
+
 
 pc = Pinecone(api_key="pcsk_5DwedT_D4bc61kqQVy1LCVf3mGuVPMYRRkLhHcS58kTuL4Pz2PB3gGRwBkunivicMq8yA8")
 index = pc.Index("test")
@@ -12,7 +14,8 @@ def retrieve_chunks(query: str, top_k: int = 3):
     Retrieve the top-k most relevant chunks from the Pinecone vector database.
     """
     # Embed the query using Member C's embedder.py
-    query_embedding = embed([{"text": query}])["data"][0]["embedding"]  # ✅ Use Member C's embedder
+    query_response = embed([{"text": query}])  # Call embed function
+    query_embedding = query_response.data[0].embedding  # ✅ Correct way to extract embedding
 
     # Perform similarity search in Pinecone
     results = index.query(
@@ -65,8 +68,6 @@ def prepare_prompt(query: str, retrieved_chunks: list):
     return prompt
 
 
-from langchain.llms import OpenAI
-
 def answer_query(query: str, top_k: int = 3):
     """
     End-to-end RAG pipeline: Retrieve relevant chunks and generate an answer.
@@ -85,8 +86,9 @@ def answer_query(query: str, top_k: int = 3):
     prompt = prepare_prompt(query, retrieved_chunks)
 
     # Step 3: Generate answer using GPT-4o-mini
-    llm = OpenAI(model="gpt-4o-mini", temperature=0.7)
-    return llm(prompt)
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)  # ✅ Correct
+    return llm.invoke(prompt)  # ✅ Use `invoke()`, NOT `__call__`
+
 
 
 # Test full pipeline
