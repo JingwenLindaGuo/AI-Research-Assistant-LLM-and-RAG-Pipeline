@@ -16,3 +16,4 @@ __pycache__/
 
 # Ignore environment variables or credentials (if you use them)
 .env
+
