@@ -1,6 +1,7 @@
 from pinecone import Pinecone, ServerlessSpec
 from dotenv import load_dotenv
 import os
+from Embedder import embed
 
 # Load environment variables
 load_dotenv()
@@ -9,16 +10,21 @@ load_dotenv()
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
 index_name = "test"
+# Check if the index already exists before creating it
+if index_name not in [idx["name"] for idx in pc.list_indexes()]:
+    pc.create_index(
+        name=index_name,
+        dimension=1536,
+        metric="cosine",
+        spec=ServerlessSpec(
+            cloud="aws",
+            region="us-east-1"
+        ) 
+    )
+    print(f"Index '{index_name}' created successfully!")
+else:
+    print(f"Index '{index_name}' already exists, skipping creation.")
 
-pc.create_index(
-    name=index_name,
-    dimension=1536,
-    metric="cosine",
-    spec=ServerlessSpec(
-        cloud="aws",
-        region="us-east-1"
-    ) 
-)
 
 index = pc.Index(index_name)
 
@@ -30,3 +36,31 @@ data = [
     {"id": "vec5", "text": "An apple a day keeps the doctor away, as the saying goes."},
     {"id": "vec6", "text": "Apple Computer Company was founded on April 1, 1976, by Steve Jobs, Steve Wozniak, and Ronald Wayne as a partnership."}
 ]
+
+embeddings = embed(data)
+
+vectors = []
+for d, e in zip(data, embeddings):
+    vectors.append({
+        "id": d['id'],
+        "values": e['values'],
+        "metadata": {'text': d['text']}
+    })
+    
+index.upsert(
+    vectors=vectors,
+    namespace="test"
+)
+
+query = "Tell me about the tech company known as Apple."
+
+query_embed = embed(query)
+query_vector = query_embed[0]["values"]
+
+results = index.query(
+    namespace="test",
+    vector=query_vector,
+    top_k=3,
+    include_values=False,
+    include_metadata=True
+)
