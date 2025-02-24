@@ -24,12 +24,12 @@ If the user wants to SEARCH:
   "filters": {
     "title": "<string or empty>",
     "author": "<string or empty>",
-    "abstract_keywords": "<string or empty>",
+    "abstract_keywords": ["<string>", "<string>", ...],
     "comment": "<string or empty>",
     "journal_reference": "<string or empty>",
     "category": "<string or empty>",
     "release_date": "<string or empty>",
-    "keywords_to_be_excluded": "<string or empty>"
+    "keywords_to_be_excluded": ["<string>", "<string>", ...]
   }
 }
 
@@ -42,7 +42,7 @@ If the user wants to DISCUSS:
 Rules:
 - Only output valid JSON according to the schema.
 - Do not include any additional keys or text outside the JSON.
-- For "keywords", if none are specified, output an empty list [].
+- For "abstract_keywords" and "keywords_to_be_excluded", if none are specified, output an empty list [].
 """
 def classify_and_extract(user_input):
     try:
