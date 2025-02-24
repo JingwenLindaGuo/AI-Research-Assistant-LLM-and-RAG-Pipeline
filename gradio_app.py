@@ -3,24 +3,23 @@ import requests
 
 API_URL = "http://127.0.0.1:8000"  # FastAPI server URL
 
-# Track user session
+########################
+#    BACKEND CALLS     #
+########################
+
 def login_user(username, password, session):
     payload = {"username": username, "password": password}
     response = requests.post(f"{API_URL}/login", json=payload)
 
     if response.status_code == 200:
-        # Mark user as logged in
         session["logged_in"] = True
         session["username"] = username
-
-        # Store the token in the session
         token = response.json()["access_token"]
         session["access_token"] = token
-
         return f"Welcome, {username}!", True
     else:
         return f"Error: {response.json().get('detail', 'Unknown error')}", False
-    
+
 def register_user(username, password, confirm_password):
     payload = {"username": username, "password": password, "confirm_password": confirm_password}
     response = requests.post(f"{API_URL}/register", json=payload)
@@ -30,14 +29,12 @@ def register_user(username, password, confirm_password):
     else:
         return f"Error: {response.json().get('detail', 'Unknown error')}"
 
-# Chat functionality (Only accessible if logged in)
 def submit_message(user_message, chat_history, session):
     if not session.get("logged_in"):
         return "Error: You must be logged in to chat.", chat_history, chat_history
 
     token = session.get("access_token")
     headers = {"Authorization": f"Bearer {token}"}
-
     payload = {"user_message": user_message}
     response = requests.post(f"{API_URL}/chat", json=payload, headers=headers)
 
@@ -49,78 +46,152 @@ def submit_message(user_message, chat_history, session):
     chat_history.append((user_message, assistant_reply))
     return "", chat_history, chat_history
 
-# Logout function
 def logout_user(session):
     session["logged_in"] = False
-    return "You have been logged out.", False  # Update login state
+    session["access_token"] = None
+    return "You have been logged out.", False
 
-# Main Gradio UI
+########################
+#     GRADIO APP       #
+########################
+
 def main():
     with gr.Blocks() as demo:
-        session_state = gr.State({"logged_in": False, "username": ""})
+        # Track login status and whether we're showing the "Register" screen
+        session_state = gr.State({"logged_in": False, "username": "", "access_token": None})
+        login_status = gr.State(False)     # True if user is logged in
+        show_register = gr.State(False)    # True if user clicked "Register" button
+
+        ######################
+        # Toggle UI function #
+        ######################
+        def update_ui(is_logged_in, is_register_screen):
+            """
+            Returns tuple of:
+            (login_container_visibility, register_container_visibility, chat_container_visibility)
+
+            - If logged in: show chat only
+            - If not logged in & show_register: show register only
+            - If not logged in & not show_register: show login only
+            """
+            if is_logged_in:
+                return (gr.update(visible=False), gr.update(visible=False), gr.update(visible=True))
+            else:
+                if is_register_screen:
+                    return (gr.update(visible=False), gr.update(visible=True), gr.update(visible=False))
+                else:
+                    return (gr.update(visible=True), gr.update(visible=False), gr.update(visible=False))
+
+        def toggle_register_mode(current_mode):
+            # Flip from False -> True or True -> False
+            return not current_mode
 
         gr.Markdown("# Chat with GPT-4o-mini via FastAPI Backend")
 
-        with gr.Tabs():
-            # Login Tab
-            with gr.Tab("Login"):
-                gr.Markdown("## Login")
-                login_username_input = gr.Textbox(label="Username")
-                login_password_input = gr.Textbox(label="Password", type="password")
-                login_button = gr.Button("Login")
-                login_output = gr.Textbox(label="Status", interactive=False)
-                login_status = gr.State(False)
+        ##################################
+        # 1) Login Container (default)   #
+        ##################################
+        with gr.Column(visible=True) as login_container:
+            gr.Markdown("## Login")
+            login_username = gr.Textbox(label="Username")
+            login_password = gr.Textbox(label="Password", type="password")
+            login_button = gr.Button("Login")
+            login_output = gr.Textbox(label="Status", interactive=False)
 
-                login_button.click(
-                    fn=login_user,
-                    inputs=[login_username_input, login_password_input, session_state],
-                    outputs=[login_output, login_status]
-                )
+            # Link to register
+            switch_to_register_btn = gr.Button("Don't have an account? Register here", variant="secondary")
 
-            # Register Tab
-            with gr.Tab("Register"):
-                gr.Markdown("## Register")
-                username_input = gr.Textbox(label="Username")
-                password_input = gr.Textbox(label="Password", type="password")
-                confirm_password_input = gr.Textbox(label="Confirm Password", type="password")
-                register_button = gr.Button("Register")
-                register_output = gr.Textbox(label="Status", interactive=False)
+        ##################################
+        # 2) Register Container          #
+        ##################################
+        with gr.Column(visible=False) as register_container:
+            gr.Markdown("## Register")
+            reg_username = gr.Textbox(label="Username")
+            reg_password = gr.Textbox(label="Password", type="password")
+            reg_confirm = gr.Textbox(label="Confirm Password", type="password")
+            register_button = gr.Button("Register")
+            register_output = gr.Textbox(label="Status", interactive=False)
 
-                register_button.click(
-                    fn=register_user,
-                    inputs=[username_input, password_input, confirm_password_input],
-                    outputs=register_output
-                )
+            # Link back to login
+            switch_to_login_btn = gr.Button("Already have an account? Login here", variant="primary")
 
-            # Chat Tab (Visible Only If Logged In)
-            with gr.Tab("Chat") as chat_tab:
-                with gr.Row(visible=False) as chat_ui:  # Initially hidden
-                    chatbot = gr.Chatbot()
-                    state = gr.State([])
-                    user_input = gr.Textbox(label="Your message")
-                    logout_button = gr.Button("Logout")
+        ##################################
+        # 3) Chat Container (protected)  #
+        ##################################
+        with gr.Column(visible=False) as chat_container:
+            gr.Markdown("## Chat Interface")
+            chatbot = gr.Chatbot()
+            state = gr.State([])
 
-                    user_input.submit(
-                        fn=submit_message,
-                        inputs=[user_input, state, session_state],
-                        outputs=[user_input, chatbot, state]
-                    )
+            user_input = gr.Textbox(label="Your message")
+            send_button = gr.Button("Send")
+            logout_button = gr.Button("Logout")
+            logout_output = gr.Textbox(label="Status", interactive=False)
 
-                    logout_button.click(
-                        fn=logout_user,
-                        inputs=[session_state],
-                        outputs=[login_output, login_status]
-                    )
+        ###########################################
+        #             Button Callbacks            #
+        ###########################################
 
-            # Dynamic visibility control based on login state
-            def toggle_chat_visibility(login_status):
-                return gr.update(visible=login_status)
+        # -- Login
+        login_button.click(
+            fn=login_user,
+            inputs=[login_username, login_password, session_state],
+            outputs=[login_output, login_status]
+        )
 
-            login_status.change(
-                fn=toggle_chat_visibility,
-                inputs=[login_status],
-                outputs=[chat_ui]
-            )
+        # -- Register
+        register_button.click(
+            fn=register_user,
+            inputs=[reg_username, reg_password, reg_confirm],
+            outputs=register_output
+        )
+
+        # -- Send Chat Message
+        send_button.click(
+            fn=submit_message,
+            inputs=[user_input, state, session_state],
+            outputs=[user_input, chatbot, state]
+        )
+
+        # -- Logout
+        logout_button.click(
+            fn=logout_user,
+            inputs=[session_state],
+            outputs=[logout_output, login_status]
+        )
+
+        # -- Switch to Register Screen
+        switch_to_register_btn.click(
+            fn=toggle_register_mode,
+            inputs=[show_register],
+            outputs=show_register
+        )
+
+        # -- Switch back to Login Screen
+        switch_to_login_btn.click(
+            fn=toggle_register_mode,
+            inputs=[show_register],
+            outputs=show_register
+        )
+
+        ###########################################
+        #     Dynamic Visibility with .change()   #
+        ###########################################
+
+        # Whenever login_status or show_register changes, update container visibility
+        login_status.change(
+            fn=update_ui,
+            inputs=[login_status, show_register],
+            outputs=[login_container, register_container, chat_container]
+        )
+        show_register.change(
+            fn=update_ui,
+            inputs=[login_status, show_register],
+            outputs=[login_container, register_container, chat_container]
+        )
+
+        # Initialize the UI to show "login_container" by default
+        update_ui(False, False)
 
     demo.launch(share=True, server_port=7860)
 
