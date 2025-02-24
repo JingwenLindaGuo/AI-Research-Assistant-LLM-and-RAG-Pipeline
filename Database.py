@@ -64,3 +64,4 @@ results = index.query(
     include_values=False,
     include_metadata=True
 )
+print(results)

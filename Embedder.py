@@ -9,8 +9,11 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def embed(data):
+
+    text_inputs = [d['text'] for d in data] if isinstance(data, list) else [data]
+
     response = client.embeddings.create(
-        input=[d['text'] for d in data],
+        input=text_inputs,
         model="text-embedding-3-small"
     )
-    return response   
+    return [{"values": item.embedding} for item in response.data]  
