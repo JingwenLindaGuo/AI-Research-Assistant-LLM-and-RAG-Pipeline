@@ -44,3 +44,28 @@ Rules:
 - Do not include any additional keys or text outside the JSON.
 - For "keywords", if none are specified, output an empty list [].
 """
+def classify_and_extract(user_input):
+    try:
+        # Send prompt to Chatgpt-4o-mini
+        response = client.chat.completions.create(model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_input},
+        ],
+        temperature=0.0 
+        )
+
+        # Get the reponse
+        assistant_message = response.choices[0].message.content
+
+        # Load response as json
+        structured_output = json.loads(assistant_message)
+        return structured_output
+
+    except json.JSONDecodeError:
+        # If the model didn't return valid JSON
+        return {
+            "action": "error",
+            "error": "Invalid JSON returned by GPT-4o",
+            "raw_response": assistant_message
+        }
