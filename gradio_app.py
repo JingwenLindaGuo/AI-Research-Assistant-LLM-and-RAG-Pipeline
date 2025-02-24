@@ -9,12 +9,18 @@ def login_user(username, password, session):
     response = requests.post(f"{API_URL}/login", json=payload)
 
     if response.status_code == 200:
+        # Mark user as logged in
         session["logged_in"] = True
         session["username"] = username
-        return f"Welcome, {username}!", True  # Login successful
-    else:
-        return f"Error: {response.json().get('detail', 'Unknown error')}", False  # Login failed
 
+        # Store the token in the session
+        token = response.json()["access_token"]
+        session["access_token"] = token
+
+        return f"Welcome, {username}!", True
+    else:
+        return f"Error: {response.json().get('detail', 'Unknown error')}", False
+    
 def register_user(username, password, confirm_password):
     payload = {"username": username, "password": password, "confirm_password": confirm_password}
     response = requests.post(f"{API_URL}/register", json=payload)
@@ -29,8 +35,11 @@ def submit_message(user_message, chat_history, session):
     if not session.get("logged_in"):
         return "Error: You must be logged in to chat.", chat_history, chat_history
 
+    token = session.get("access_token")
+    headers = {"Authorization": f"Bearer {token}"}
+
     payload = {"user_message": user_message}
-    response = requests.post(f"{API_URL}/chat", json=payload)
+    response = requests.post(f"{API_URL}/chat", json=payload, headers=headers)
 
     if response.status_code == 200:
         assistant_reply = response.json()["assistant_message"]
