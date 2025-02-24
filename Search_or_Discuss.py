@@ -74,10 +74,16 @@ def classify_and_extract(user_input):
 user_input_1 = "Find me papers about quantum computing by John Smith published after 2020."
 result_1 = classify_and_extract(user_input_1)
 print("User request 1:", user_input_1)
-print("LLM response (parsed):", result_1)
+print("LLM response :", result_1)
 
 # Example user input discussing an existing paper
 user_input_2 = "What are the main conclusions of the paper about deep learning we found?"
 result_2 = classify_and_extract(user_input_2)
 print("\nUser request 2:", user_input_2)
-print("LLM response (parsed):", result_2)
+print("LLM response :", result_2)
+
+# Example user input asking for search
+user_input_3 = "Get me the latest papers on machine learning that don't have image generation in them"
+result_3 = classify_and_extract(user_input_3)
+print("\nUser request 3:", user_input_3)
+print("LLM response :", result_3)
