@@ -31,6 +31,7 @@ If the user wants to SEARCH:
     "release_date": "<string or empty>",
     "keywords_to_be_excluded": ["<string>", "<string>", ...]
   }
+  "question": "<the user question or what they want to be done with the data retrieved>"
 }
 
 If the user wants to DISCUSS:
