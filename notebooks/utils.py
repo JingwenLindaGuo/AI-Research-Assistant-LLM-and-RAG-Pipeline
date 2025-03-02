@@ -42,8 +42,9 @@ def format_query(filters: PaperFilter) -> str:
     if filters.exclude_words:
         search_parts.append(f'NOT "{filters.exclude_words}"')  
     if filters.start_date or filters.end_date:
-        date_range = f'submittedDate:[{filters.start_date or "*"} TO {filters.end_date or "*"}]'
-        search_parts.append(date_range)
+        start = filters.start_date if filters.start_date else "*"
+        end = filters.end_date if filters.end_date else "999999999999"
+        search_parts.append(f'submittedDate:[{start} TO {end}]')
 
     query_str = " AND ".join(search_parts)  # Combine with AND
     print(f"\nFormatted Query: {query_str}\n" + "-" * 100)
@@ -71,16 +72,12 @@ def verify_results(results, filters: PaperFilter):
     
     verified_results = []  # Store matching papers
 
-     # Convert filters' start_date and end_date to datetime
-    start_date_dt = datetime.strptime(str(filters.start_date), "%Y%m%d%H%M").replace(tzinfo=timezone.utc) if filters.start_date else None
-    end_date_dt = datetime.strptime(str(filters.end_date), "%Y%m%d%H%M").replace(tzinfo=timezone.utc) if filters.end_date else None
-
     for result in results:
         paper_title = result.title
         paper_author_list = [author.name for author in result.authors]
         paper_abstract = result.summary
         paper_category = result.primary_category
-        paper_submission_date = result.published.replace(tzinfo=timezone.utc)
+        paper_date = result.published.strftime("%Y%m%d%H%M")
 
         # Print paper details
         print(f"\nTitle: {paper_title}")
@@ -97,9 +94,9 @@ def verify_results(results, filters: PaperFilter):
             "Abstract Match": filters.abstract is None or filters.abstract.lower() in paper_abstract.lower(),
             "Exclusion (NOT)": filters.exclude_words is None or filters.exclude_words.lower() not in paper_title.lower(),
             "Date Range Match": (
-                start_date_dt is None or paper_submission_date >= start_date_dt
+                filters.start_date is None or str(paper_date) >= str(filters.start_date)
             ) and (
-                end_date_dt is None or paper_submission_date <= end_date_dt
+                filters.start_date is None or (paper_date) <= str(filters.end_date)
             )
         }
         
