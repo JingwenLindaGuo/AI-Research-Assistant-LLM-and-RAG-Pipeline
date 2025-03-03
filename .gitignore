@@ -4,6 +4,10 @@ __pycache__/
 
 # Ignore virtual environment directory
 .venv/
+venv/
+.env
+__pycache__
+
 
 
 # Ignore Gradio temporary files and logs
