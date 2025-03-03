@@ -3,47 +3,28 @@ import tempfile
 import time
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from dataclasses import dataclass
-from datetime import datetime, timezone
 
-@dataclass
-class PaperFilter:
-    """ Stores filtering criteria for ArXiv search. """
-    query: str = "LLM"
-    author: str = None
-    title: str = None
-    category: str = None
-    exclude_words: str = None
-    abstract: str = None
-    journal_ref: str = None
-    doi: str = None
-    sort_by: str = "relevance"
-    max_results: int = 10
-    start_date: str = None  # Format: YYYYMMDDTTTT (e.g., "202201010000")
-    end_date: str = None    # Format: YYYYMMDDTTTT (e.g., "202312312359")
+def format_query(filters):
+    """ Builds an ArXiv API query string from filter dictionary. """
 
-def format_query(filters: PaperFilter) -> str:
-    """ Builds an ArXiv API query string from PaperFilter object. """
-
-    search_parts = [filters.query]  # Base query
-
-    if filters.author:
-        search_parts.append(f'au:"{filters.author}"')  
-    if filters.title:
-        search_parts.append(f'ti:"{filters.title}"')  
-    if filters.category:
-        search_parts.append(f'cat:"{filters.category}"')  
-    if filters.abstract:
-        search_parts.append(f'abs:"{filters.abstract}"')  
-    if filters.journal_ref:
-        search_parts.append(f'jr:"{filters.journal_ref}"')  
-    if filters.doi:
-        search_parts.append(f'doi:"{filters.doi}"')  
-    if filters.exclude_words:
-        search_parts.append(f'NOT "{filters.exclude_words}"')  
-    if filters.start_date or filters.end_date:
-        start = filters.start_date if filters.start_date else "*"
-        end = filters.end_date if filters.end_date else "999999999999"
+    search_parts = [filters.get('query')]  # Base query
+    if filters.get('author'):
+        search_parts.append(f'au:"{filters["author"]}"')  
+    if filters.get('title'):
+        search_parts.append(f'ti:"{filters["title"]}"')  
+    if filters.get('category'):
+        search_parts.append(f'cat:"{filters["category"]}"')  
+    if filters.get('abstract'):
+        search_parts.append(f'abs:"{filters["abstract"]}"')  
+    if filters.get('journal_ref'):
+        search_parts.append(f'jr:"{filters["journal_ref"]}"')  
+    if filters.get('doi'):
+        search_parts.append(f'doi:"{filters["doi"]}"')  
+    if filters.get('exclude_words'):
+        search_parts.append(f'NOT "{filters["exclude_words"]}"')  
+    if filters.get('start_date') or filters.get('end_date'):
+        start = filters.get('start_date', "*")  # Default to "*"
+        end = filters.get('end_date', "999999999999")  # Default to max value
         search_parts.append(f'submittedDate:[{start} TO {end}]')
 
     query_str = " AND ".join(search_parts)  # Combine with AND
@@ -51,7 +32,7 @@ def format_query(filters: PaperFilter) -> str:
 
     return query_str
 
-def fetch_papers(filters: PaperFilter):
+def fetch_papers(filters):
     """ Fetches academic papers from ArXiv based on filters. """
     
     search_query = format_query(filters)  # Build query
@@ -60,14 +41,14 @@ def fetch_papers(filters: PaperFilter):
     client = arxiv.Client()
     search = arxiv.Search(
         query=search_query,
-        max_results=filters.max_results,
-        sort_by=arxiv.SortCriterion.Relevance if filters.sort_by == "relevance" else arxiv.SortCriterion.SubmittedDate
+        max_results=int(filters.get('max_results')),
+        sort_by=arxiv.SortCriterion.Relevance if filters.get('sort_by') == "relevance" else arxiv.SortCriterion.SubmittedDate
     )
 
     results = list(client.results(search))  
     return results
 
-def verify_results(results, filters: PaperFilter):
+def verify_results(results, filters):
     """ Verifies if fetched papers match the filters and prints details. """
     
     verified_results = []  # Store matching papers
@@ -88,18 +69,18 @@ def verify_results(results, filters: PaperFilter):
 
         # Check filter matches
         match_results = {
-            "Author Match": filters.author is None or any(filters.author.lower() in a.lower() for a in paper_author_list),
-            "Title Match": filters.title is None or filters.title.lower() in paper_title.lower(),
-            "Category Match": filters.category is None or filters.category in paper_category,
-            "Abstract Match": filters.abstract is None or filters.abstract.lower() in paper_abstract.lower(),
-            "Exclusion (NOT)": filters.exclude_words is None or filters.exclude_words.lower() not in paper_title.lower(),
+            "Author Match": filters.get('author') is None or any(filters.get('author', '').lower() in a.lower() for a in paper_author_list),
+            "Title Match": filters.get('title') is None or filters.get('title', '').lower() in paper_title.lower(),
+            "Category Match": filters.get('category') is None or filters.get('category') in paper_category,
+            "Abstract Match": filters.get('abstract') is None or filters.get('abstract', '').lower() in paper_abstract.lower(),
+            "Exclusion (NOT)": filters.get('exclude_words') is None or filters.get('exclude_words', '').lower() not in paper_title.lower(),
             "Date Range Match": (
-                filters.start_date is None or str(paper_date) >= str(filters.start_date)
+                filters.get('start_date') is None or str(paper_date) >= str(filters.get('start_date', ""))
             ) and (
-                filters.start_date is None or (paper_date) <= str(filters.end_date)
+                filters.get('end_date') is None or str(paper_date) <= str(filters.get('end_date', "999999999999"))
             )
         }
-        
+
         # Print filter match results
         print("\nFilter Matches:")
         for filter_name, is_match in match_results.items():
