@@ -23,15 +23,16 @@ If the user wants to SEARCH:
   "action": "search",
   "filters": {
     "query": "<Main search topic>",
-    "start_date": "<YYYYMMDD or null>",
-    "end_date": "<YYYYMMDD or null>",
     "author": "<Author name or null>",
     "title": "<Title keyword or null>",
     "category": "<Research category code or null>",
-    "exclude_words": "<Words to exclude or null>",
     "abstract": "<Keyword in abstract or null>",
     "journal_ref": "<Journal name or null>",
     "doi": "<Specific paper DOI or null>",
+    "exclude_words": "<Words to exclude or null>",
+    "start_date": "<YYYYMMDD or null>",
+    "end_date": "<YYYYMMDD or null>",
+    "max_results": "<Maximum results or 10>"
     "sort_by": "<'relevance' or 'newest'>"
   },
   "question": "<The user's request for retrieved data>"
