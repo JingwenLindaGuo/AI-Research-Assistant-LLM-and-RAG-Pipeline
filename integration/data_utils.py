@@ -28,7 +28,6 @@ def format_query(filters):
         search_parts.append(f'submittedDate:[{start} TO {end}]')
 
     query_str = " AND ".join(search_parts)  # Combine with AND
-    print(f"\nFormatted Query: {query_str}\n" + "-" * 100)
 
     return query_str
 
@@ -60,13 +59,6 @@ def verify_results(results, filters):
         paper_category = result.primary_category
         paper_date = result.published.strftime("%Y%m%d%H%M")
 
-        # Print paper details
-        print(f"\nTitle: {paper_title}")
-        print(f"- Author(s): {', '.join(paper_author_list)}")
-        print(f"- Category: {paper_category}")
-        print(f"- Abstract (first 200 chars): {paper_abstract[:200]}...")
-        print(f"- Submitted Date: {result.published}")
-
         # Check filter matches
         match_results = {
             "Author Match": filters.get('author') is None or any(filters.get('author', '').lower() in a.lower() for a in paper_author_list),
@@ -81,18 +73,10 @@ def verify_results(results, filters):
             )
         }
 
-        # Print filter match results
-        print("\nFilter Matches:")
-        for filter_name, is_match in match_results.items():
-            print(f"- {filter_name}: {'✅' if is_match else '❌'}")
-
-        print("-" * 100)
-
         # Add paper if it meets all criteria
         if all(match_results.values()):
             verified_results.append(result)
 
-    print(f"\nFinal Papers Matching All Filters: {len(verified_results)}\n")
     return verified_results
 
 def chunk_papers(results):
@@ -115,11 +99,9 @@ def chunk_papers(results):
                 paper_chunks = text_splitter.create_documents([full_text])
 
                 all_chunks.extend(paper_chunks)
-                print(f"Extracted {len(paper_chunks)} chunks from '{result.title}'")
 
             except (FileNotFoundError, ConnectionResetError) as e:
                 print(f"Error: {e}")
                 time.sleep(5)
 
-    print(f"\nTotal Chunks Extracted: {len(all_chunks)}\n")
     return all_chunks
