@@ -39,5 +39,29 @@ def delete_index(index_name):
     try:
         pc.delete_index(index_name)
         print(f"Index '{index_name}' deleted successfully!")
-    except Exception as e: 
+    except Exception as e: # if the index does not exist catch the error
         print(f"Index '{index_name}' does not exist or was already deleted.")
+
+def save_embeddings_to_index(index_name, data, namespace="default"):
+
+    # Retrieve the index instance
+    index = pc.Index(index_name)
+
+    # Embed the data
+    embeddings = embed(data)
+
+    # Prepare vectors for upsert
+    vectors = []
+    for d, e in zip(data, embeddings):
+        vectors.append({
+            "id": d['id'],
+            "values": e['values'],
+            "metadata": {"text": d['text']}
+        })
+    
+    # Upsert embeddings into the index
+    index.upsert(
+        vectors=vectors,
+        namespace=namespace
+    )
+    print(f"Upserted {len(vectors)} embeddings into index '{index_name}', namespace '{namespace}'.")
