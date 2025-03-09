@@ -1,9 +1,10 @@
 from pinecone import Pinecone, ServerlessSpec
 from dotenv import load_dotenv
 import os
-from .Embedder import embed
+from Embedder import embed
 import random
 import string
+import uuid
 
 # Load environment variables
 load_dotenv()
@@ -14,8 +15,8 @@ pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 def create_index(dimension=1536, metric="cosine", cloud="aws", region="us-east-1"):
     
     # Generate random name for an index
-    str_characters = string.ascii_letters + string.digits
-    index_name = ''.join(random.choice(str_characters) for _ in range(12))
+    str_characters = string.ascii_lowercase + string.digits
+    index_name = ''.join(random.choice(str_characters) for _ in range(10))
 
     # Check if the index already exists
     if index_name not in [idx["name"] for idx in pc.list_indexes()]:
@@ -42,17 +43,25 @@ def delete_index(index_name):
     except Exception as e: # if the index does not exist catch the error
         print(f"Index '{index_name}' does not exist or was already deleted.")
 
-def save_embeddings_to_index(index_name, data, namespace="default"):
+def save_embeddings_to_index(index_name, text, namespace="default"):
 
     # Retrieve the index instance
     index = pc.Index(index_name)
 
+    # Convert text into a list of dicts with unique IDs
+    data_with_ids = []
+    for t in text:
+        data_with_ids.append({
+            "id": str(uuid.uuid4()),  # generate a random UUID
+            "text": t
+        })
+
     # Embed the data
-    embeddings = embed(data)
+    embeddings = embed(data_with_ids)
 
     # Prepare vectors for upsert
     vectors = []
-    for d, e in zip(data, embeddings):
+    for d, e in zip(data_with_ids, embeddings):
         vectors.append({
             "id": d['id'],
             "values": e['values'],
@@ -65,3 +74,4 @@ def save_embeddings_to_index(index_name, data, namespace="default"):
         namespace=namespace
     )
     print(f"Upserted {len(vectors)} embeddings into index '{index_name}', namespace '{namespace}'.")
+
