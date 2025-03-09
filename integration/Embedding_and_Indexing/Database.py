@@ -1,7 +1,7 @@
 from pinecone import Pinecone, ServerlessSpec
 from dotenv import load_dotenv
 import os
-from Embedder import embed
+from .Embedder import embed
 import random
 import string
 
