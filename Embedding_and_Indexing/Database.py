@@ -32,4 +32,12 @@ def create_index(dimension=1536, metric="cosine", cloud="aws", region="us-east-1
     else:
         print(f"Index '{index_name}' already exists, skipping creation.")
     
+    # Return the name of the index created
     return index_name
+
+def delete_index(index_name):
+    try:
+        pc.delete_index(index_name)
+        print(f"Index '{index_name}' deleted successfully!")
+    except Exception as e: 
+        print(f"Index '{index_name}' does not exist or was already deleted.")
