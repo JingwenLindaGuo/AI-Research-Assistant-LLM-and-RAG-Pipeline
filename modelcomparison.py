@@ -108,21 +108,21 @@ small_benchmark = dataset.shuffle(seed=42).select(range(50))
 # print(f"hf_mpnet_correlation Pearson Correlation: {hf_mpnet_correlation:.4f}")
 
 # %%
-openai_small_correlation = 0.8673
-openai_large_correlation = 0.8668
-hf_mini_correlation = 0.7993
-hf_mpnet_correlation = 0.8423
+# openai_small_correlation = 0.8673
+# openai_large_correlation = 0.8668
+# hf_mini_correlation = 0.7993
+# hf_mpnet_correlation = 0.8423
 
-# %%
-from clearml import Task 
-task = Task.init(project_name="Embedding model evaluation", task_name="Compare Embedding Models - Semantic Similarity2")
+# # %%
+# from clearml import Task 
+# task = Task.init(project_name="Embedding model evaluation", task_name="Compare Embedding Models - Semantic Similarity2")
  
-task.get_logger().report_scalar("Semantic Meaning Pearson Correlation", "OpenAI Small Model", openai_small_correlation, iteration=1)
-task.get_logger().report_scalar("Semantic Meaning Pearson Correlation", "OpenAI Large Model", openai_large_correlation, iteration=1)
-task.get_logger().report_scalar("Semantic Meaning Pearson Correlation", "HF mini Model", hf_mini_correlation, iteration=1) 
-task.get_logger().report_scalar("Semantic Meaning Pearson Correlation", "HF mpnet Model", hf_mpnet_correlation, iteration=1)
+# task.get_logger().report_scalar("Semantic Meaning Pearson Correlation", "OpenAI Small Model", openai_small_correlation, iteration=1)
+# task.get_logger().report_scalar("Semantic Meaning Pearson Correlation", "OpenAI Large Model", openai_large_correlation, iteration=1)
+# task.get_logger().report_scalar("Semantic Meaning Pearson Correlation", "HF mini Model", hf_mini_correlation, iteration=1) 
+# task.get_logger().report_scalar("Semantic Meaning Pearson Correlation", "HF mpnet Model", hf_mpnet_correlation, iteration=1)
 
-task.close()
+# task.close()
 
 
 # %% [markdown]
@@ -137,14 +137,15 @@ from sentence_transformers import SentenceTransformer
 
 # download MSMARCO dataset
 dataset = "msmarco"
-data_path = f"datasets/{dataset}"   
+dataset_path = Dataset.get(dataset_id="ea34bc9235bd4472b50a0a86d07b6e50").get_local_copy()
+data_path = os.path.join(dataset_path, dataset)
 
 ##uncomment to download the dataset for testing
 # url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
 
 # # download and unzip
-# util.download_and_unzip(url, data_path)
- 
+# util.download_and_unzip(url, data_path) 
+
 data_loader = GenericDataLoader(data_path)
 corpus, queries, qrels = data_loader.load(split="test")
 
@@ -235,14 +236,12 @@ task.get_logger().report_scalar("Retrieval MRR", "OpenAI Large Model", openai_la
 task.get_logger().report_scalar("Retrieval MRR", "HF mini Model", hf_mini_mrr, iteration=1)
 task.get_logger().report_scalar("Retrieval MRR", "HF mpnet Model", hf_mpnet_mrr, iteration=1)
 
-task.close()
-
 print(f"OpenAI Small Model MRR: {openai_small_mrr:.4f}")
 print(f"OpenAI Large Model MRR: {openai_large_mrr:.4f}")
 print(f"OpenAI Small Model MRR: {hf_mini_mrr:.4f}")
 print(f"OpenAI Large Model MRR: {hf_mpnet_mrr:.4f}")
 
- 
+task.close()
 
 # %%
 
