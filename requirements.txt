@@ -1,0 +1,9 @@
+beir
+clearml
+datasets
+scikit-learn
+sentence-transformers
+dotenv
+openai
+ipykernel
+numpy
