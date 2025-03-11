@@ -4,10 +4,11 @@ import torch
 
 import os
 from clearml import Dataset, Task
-
-dataset_id = "ea34bc9235bd4472b50a0a86d07b6e50"
-cache_dir = "./datasets_cache"  # 你可以改成更合适的路径
-dataset_path = os.path.join(cache_dir, dataset_id)
+ 
+#comment out to dataset
+cache_dir = "./datasets"  # 你可以改成更合适的路径
+dataset_path =  cache_dir 
+dataset_id="ea34bc9235bd4472b50a0a86d07b6e50"
 
 if not os.path.exists(dataset_path):
     print("🔍 Local dataset not found, downloading...")
@@ -18,22 +19,8 @@ else:
     print("✅ Using cached dataset")
 
 data_path = os.path.join(dataset_path, "msmarco")  # 确保路径正确
+#comment out
 
-task = Task.init(project_name="Embedding model evaluation", task_name="Compare Embedding Models - Retrieval3")
-task.execute_remotely(queue_name="default", exit_process=True)
-
-task.connect({
-    "dataset": dataset_path,
-    "num_samples": len(msmarco_subset),
-})
-
-print("ClearML initialised")
-
-
-if torch.cuda.is_available():
-    print("✅ GPU is available! Using:", torch.cuda.get_device_name(0))
-else:
-    print("❌ GPU not detected, running on CPU")
 # %% [markdown]
 # Load Embedding Model
 
@@ -171,10 +158,6 @@ from sentence_transformers import SentenceTransformer
 # download MSMARCO dataset
 from clearml import Dataset
 
-dataset = "msmarco"
-dataset_path = Dataset.get(dataset_id="ea34bc9235bd4472b50a0a86d07b6e50").get_local_copy()
-data_path = os.path.join(dataset_path, dataset)
-
 ##uncomment to download the dataset for testing
 # url = f"https://public.ukp.informatik.tu-darmstadt.de/thakur/BEIR/datasets/{dataset}.zip"
 
@@ -243,6 +226,35 @@ def evaluate_retrieval(dataset, embed_function):
 
 # %%
 
+cache_dir = "./datasets"  # 你可以改成更合适的路径
+dataset_path =  cache_dir 
+dataset_id="ea34bc9235bd4472b50a0a86d07b6e50"
+
+if not os.path.exists(dataset_path):
+    print("🔍 Local dataset not found, downloading...")
+    dataset_path = Dataset.get(dataset_id=dataset_id).get_local_copy()
+    os.makedirs(cache_dir, exist_ok=True)
+    os.system(f'cp -r {dataset_path} {cache_dir}')  # 复制数据到缓存
+else:
+    print("✅ Using cached dataset")
+
+data_path = os.path.join(dataset_path, "msmarco")  # 确保路径正确
+
+task = Task.init(project_name="Embedding model evaluation", task_name="Compare Embedding Models - Retrieval3")
+task.execute_remotely(queue_name="default", exit_process=True)
+
+task.connect({
+    "dataset": dataset_path,
+    "num_samples": len(msmarco_subset),
+})
+
+print("ClearML initialised")
+
+
+if torch.cuda.is_available():
+    print("✅ GPU is available! Using:", torch.cuda.get_device_name(0))
+else:
+    print("❌ GPU not detected, running on CPU")
 
 print('Evaluating openAI models')
 openai_small_mrr = evaluate_retrieval(msmarco_subset, openai_small)
