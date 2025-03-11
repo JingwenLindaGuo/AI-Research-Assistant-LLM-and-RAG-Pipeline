@@ -1,6 +1,25 @@
 # %% [markdown]  我要用conda建立一个3.9或者3.10的env
 # Setup Clearml
+from clearml import Task 
+import torch
+from clearml import Dataset
 
+dataset = "msmarco"
+dataset_path = Dataset.get(dataset_id="ea34bc9235bd4472b50a0a86d07b6e50").get_local_copy()
+data_path = os.path.join(dataset_path, dataset)
+task = Task.init(project_name="Embedding model evaluation", task_name="Compare Embedding Models - Retrieval3") 
+task.execute_remotely(queue_name="default", exit_process=True)
+
+task.connect({
+    "dataset": dataset_path,
+    "num_samples": len(msmarco_subset),
+})
+print("ClearML initialised")
+
+if torch.cuda.is_available():
+    print("✅ GPU is available! Using:", torch.cuda.get_device_name(0))
+else:
+    print("❌ GPU not detected, running on CPU")
 # %% [markdown]
 # Load Embedding Model
 
@@ -136,6 +155,8 @@ from beir.retrieval.evaluation import EvaluateRetrieval
 from sentence_transformers import SentenceTransformer 
 
 # download MSMARCO dataset
+from clearml import Dataset
+
 dataset = "msmarco"
 dataset_path = Dataset.get(dataset_id="ea34bc9235bd4472b50a0a86d07b6e50").get_local_copy()
 data_path = os.path.join(dataset_path, dataset)
@@ -207,21 +228,6 @@ def evaluate_retrieval(dataset, embed_function):
 
 
 # %%
-from clearml import Task 
-import torch
-task = Task.init(project_name="Embedding model evaluation", task_name="Compare Embedding Models - Retrieval3") 
-task.execute_remotely(queue_name="default", exit_process=True)
-
-task.connect({
-    "dataset": "MSMARCO",
-    "num_samples": len(msmarco_subset),
-})
-print("ClearML initialised")
-
-if torch.cuda.is_available():
-    print("✅ GPU is available! Using:", torch.cuda.get_device_name(0))
-else:
-    print("❌ GPU not detected, running on CPU")
 
 
 print('Evaluating openAI models')
