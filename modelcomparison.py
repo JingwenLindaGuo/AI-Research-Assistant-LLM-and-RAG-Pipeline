@@ -103,7 +103,7 @@ data_loader = GenericDataLoader(data_path)
 corpus, queries, qrels = data_loader.load(split="test")
 
 # sample 50 instances only
-num_samples = 5
+num_samples = 50
 selected_query_ids = random.sample(list(queries.keys()), min(num_samples, len(queries)))
 print('Number of samples:', min(num_samples, len(queries)))
 
@@ -113,10 +113,10 @@ for query_id in selected_query_ids:
     if query_id in qrels:  # 只处理有 ground truth 的 queries
         relevant_doc = random.choice(list(qrels[query_id]))  # 选择一个 ground truth 文档
         non_relevant_docs = random.sample(
-            [doc_id for doc_id in corpus.keys() if doc_id not in qrels[query_id]], 4  # 确保选择非相关文档
+            [doc_id for doc_id in corpus.keys() if doc_id not in qrels[query_id]], 10  # 确保选择非相关文档
         )
 
-        candidate_doc_ids = non_relevant_docs + [relevant_doc]    # 1 个 relevant + 4 个 non-relevant
+        candidate_doc_ids = non_relevant_docs + [relevant_doc]    # 1 个 relevant + 10 个 non-relevant
         candidate_docs = [corpus[doc_id]["text"] for doc_id in candidate_doc_ids]
 
         msmarco_subset.append({
