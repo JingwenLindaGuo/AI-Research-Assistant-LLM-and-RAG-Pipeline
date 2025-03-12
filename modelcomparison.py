@@ -143,14 +143,15 @@ def evaluate_retrieval(dataset, embed_function):
     
     for example in dataset:
         query = example["query"]
-        relevant_docs = set(example["relevant_docs"])  # 转换为集合，加快查询
+        relevant_doc = example["relevant_doc"]  # ✅ 这里修正为单个文本
         candidate_docs = example["candidate_docs"]
 
-        print(f"- Query: {example['query'][:100]}...")  # 取 query 前 100 个字符
-        print(f"- Relevant doc: {example['relevant_doc'][:100]}...")  # 取 relevant doc 前 100 个字符
-        print(f"- Number of candidate docs: {len(example['candidate_docs'])}")
+        # 打印调试信息
+        print(f"- Query: {query[:100]}...")  # 取 query 前 100 个字符
+        print(f"- Relevant doc: {relevant_doc[:100]}...")  # 取 relevant doc 前 100 个字符
+        print(f"- Number of candidate docs: {len(candidate_docs)}")
 
-        for j, doc in enumerate(example["candidate_docs"]):
+        for j, doc in enumerate(candidate_docs):
             print(f"  - Candidate doc {j+1}: {doc[:100]}...")  # 取每个候选文档前 100 个字符
         print()
 
@@ -158,18 +159,19 @@ def evaluate_retrieval(dataset, embed_function):
             print(f"⚠️ Query '{query}' has no candidate documents!")
             continue  # 跳过这个样本，避免空列表计算相似度
 
+        # 计算嵌入
         query_embedding = embed_function(query)
         candidate_embeddings = [embed_function(doc) for doc in candidate_docs]
 
+        # 计算余弦相似度
         similarities = [cosine_sim(query_embedding, emb) for emb in candidate_embeddings]
         ranked_docs = sorted(zip(candidate_docs, similarities), key=lambda x: x[1], reverse=True)
 
-        ground_truth_rank = [i for i, (doc, _) in enumerate(ranked_docs) if doc in relevant_docs]
+        # 计算 ground truth rank
+        ground_truth_rank = [i for i, (doc, _) in enumerate(ranked_docs) if doc == relevant_doc]
         
         if not ground_truth_rank:
-            print(f"⚠️ No relevant docs found for query: {query}")
-            print(f"Candidate docs: {candidate_docs}")
-            print(f"Relevant docs: {relevant_docs}")
+            print(f"⚠️ No relevant docs found for query: {query[:100]}...")
         else:
             retrieved_ranks.append(ground_truth_rank[0])
 
@@ -177,8 +179,10 @@ def evaluate_retrieval(dataset, embed_function):
         print("⚠️ Warning: No relevant documents found for any queries!")
         return float('nan')  # 返回 NaN 代替 0，避免误导性结果
 
+    # 计算 MRR
     mrr = sum(1.0 / (rank + 1) for rank in retrieved_ranks) / len(retrieved_ranks)
     return mrr
+
 
 
 # # comment
