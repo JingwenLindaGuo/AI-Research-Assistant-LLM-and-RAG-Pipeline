@@ -74,11 +74,11 @@ def cosine_sim(vec1, vec2):
  
 
 # %%
-from datasets import load_dataset
+# from datasets import load_dataset
  
-dataset = load_dataset("stsb_multi_mt", name="en", split="test")
+# dataset = load_dataset("stsb_multi_mt", name="en", split="test")
  
-print(dataset[0])
+# print(dataset[0])
 
  
  
@@ -145,6 +145,14 @@ def evaluate_retrieval(dataset, embed_function):
         query = example["query"]
         relevant_docs = set(example["relevant_docs"])  # 转换为集合，加快查询
         candidate_docs = example["candidate_docs"]
+
+        print(f"- Query: {example['query'][:100]}...")  # 取 query 前 100 个字符
+        print(f"- Relevant doc: {example['relevant_doc'][:100]}...")  # 取 relevant doc 前 100 个字符
+        print(f"- Number of candidate docs: {len(example['candidate_docs'])}")
+
+        for j, doc in enumerate(example["candidate_docs"]):
+            print(f"  - Candidate doc {j+1}: {doc[:100]}...")  # 取每个候选文档前 100 个字符
+        print()
 
         if not candidate_docs:
             print(f"⚠️ Query '{query}' has no candidate documents!")
