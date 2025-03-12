@@ -116,7 +116,7 @@ for query_id in selected_query_ids:
             [doc_id for doc_id in corpus.keys() if doc_id not in qrels[query_id]], 4  # 确保选择非相关文档
         )
 
-        candidate_doc_ids = [relevant_doc] + non_relevant_docs  # 1 个 relevant + 4 个 non-relevant
+        candidate_doc_ids = non_relevant_docs + [relevant_doc]    # 1 个 relevant + 4 个 non-relevant
         candidate_docs = [corpus[doc_id]["text"] for doc_id in candidate_doc_ids]
 
         msmarco_subset.append({
@@ -165,6 +165,7 @@ def evaluate_retrieval(dataset, embed_function):
 
         # 计算余弦相似度
         similarities = [cosine_sim(query_embedding, emb) for emb in candidate_embeddings]
+        print('similarities: ',similarities)
         ranked_docs = sorted(zip(candidate_docs, similarities), key=lambda x: x[1], reverse=True)
 
         # 计算 ground truth rank
