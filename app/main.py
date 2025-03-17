@@ -151,3 +151,9 @@ def get_chat_history(username: str = Depends(get_current_user)):
     if not doc or "chat_history" not in doc:
         return {"chat_history": []}
     return {"chat_history": doc["chat_history"]}
+
+# Clear chat history endpoint
+@app.delete("/clear_chat")
+def clear_chat(username: str = Depends(get_current_user)):
+    result = chat_log_collection.delete_one({"username": username})
+    return {"message": "Chat history cleared", "deleted_count": result.deleted_count}

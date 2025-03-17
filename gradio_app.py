@@ -9,6 +9,10 @@ API_URL = "http://127.0.0.1:8000"  # FastAPI server URL
 
 # A wrapper function for after login now for chat history
 def login_user(username, password, session):
+    """ Login user and store JWT token in session
+    Returns a tuple of (Welcome message, success) 
+    session = {"logged_in": True, "username": "user", "access_token}
+    """
     payload = {"username": username, "password": password}
     response = requests.post(f"{API_URL}/login", json=payload)
 
@@ -72,6 +76,17 @@ def after_login(username, password, session):
         return msg, success, history  # (login_output, login_status, chatbot)
     else:
         return msg, success, []
+    
+def on_clear_chat(session):
+    token = session.get("access_token")
+    headers = {"Authorization": f"Bearer {token}"}
+    r = requests.delete(f"{API_URL}/clear_chat", headers=headers)
+    if r.status_code == 200:
+        return []
+    return []
+
+
+
 
 
 
@@ -152,6 +167,13 @@ def main():
             send_button = gr.Button("Send")
             logout_button = gr.Button("Logout")
             logout_output = gr.Textbox(label="Status", interactive=False)
+
+            chatbot.clear(
+                fn=on_clear_chat,
+                inputs=session_state,
+                outputs=chatbot
+            )
+            
 
         ###########################################
         #             Button Callbacks            #
