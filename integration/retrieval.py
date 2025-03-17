@@ -72,3 +72,8 @@ def answer_query(query: str, index_obj, top_k: int = 3):
     answer = llm.invoke(prompt)
     conversation_history.append(f"Query: {query}\nAnswer: {answer}")
     return answer
+
+def clear_memory():
+    conversation_history.clear()
+    document_memory.clear()
+    print("Memory cleared.")
