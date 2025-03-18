@@ -7,3 +7,5 @@ dotenv
 openai
 ipykernel
 numpy
+rouge_scores
+tiktoken
