@@ -7,7 +7,12 @@ API_URL = "http://127.0.0.1:8000"  # FastAPI server URL
 #    BACKEND CALLS     #
 ########################
 
+# A wrapper function for after login now for chat history
 def login_user(username, password, session):
+    """ Login user and store JWT token in session
+    Returns a tuple of (Welcome message, success) 
+    session = {"logged_in": True, "username": "user", "access_token}
+    """
     payload = {"username": username, "password": password}
     response = requests.post(f"{API_URL}/login", json=payload)
 
@@ -50,6 +55,41 @@ def logout_user(session):
     session["logged_in"] = False
     session["access_token"] = None
     return "You have been logged out.", False
+
+def load_chat_history(session):
+    if not session.get("logged_in"):
+        return []
+    token = session.get("access_token")
+    headers = {"Authorization": f"Bearer {token}"}
+    resp = requests.get(f"{API_URL}/get_chat_history", headers=headers)
+    if resp.status_code == 200:
+        data = resp.json()
+        # Convert each {"user": "...", "bot": "..."} to a tuple (user, bot) for the Chatbot
+        return [(msg["user"], msg["bot"]) for msg in data["chat_history"]]
+    return []
+
+def after_login(username, password, session):
+    msg, success = login_user(username, password, session)
+    if success:
+        # load chat logs from the backend
+        history = load_chat_history(session)
+        return msg, success, history  # (login_output, login_status, chatbot)
+    else:
+        return msg, success, []
+    
+def on_clear_chat(session):
+    token = session.get("access_token")
+    headers = {"Authorization": f"Bearer {token}"}
+    r = requests.delete(f"{API_URL}/clear_chat", headers=headers)
+    if r.status_code == 200:
+        return []
+    return []
+
+
+
+
+
+
 
 ########################
 #     GRADIO APP       #
@@ -128,15 +168,22 @@ def main():
             logout_button = gr.Button("Logout")
             logout_output = gr.Textbox(label="Status", interactive=False)
 
+            chatbot.clear(
+                fn=on_clear_chat,
+                inputs=session_state,
+                outputs=chatbot
+            )
+            
+
         ###########################################
         #             Button Callbacks            #
         ###########################################
 
         # -- Login
         login_button.click(
-            fn=login_user,
+            fn=after_login,
             inputs=[login_username, login_password, session_state],
-            outputs=[login_output, login_status]
+            outputs=[login_output, login_status,chatbot]
         )
 
         # -- Register
