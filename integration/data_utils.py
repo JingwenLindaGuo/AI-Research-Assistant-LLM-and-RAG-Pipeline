@@ -95,6 +95,37 @@ def verify_results(results, filters):
     print(f"\nFinal Papers Matching All Filters: {len(verified_results)}\n")
     return verified_results
 
+
+# def chunk_papers(results):
+#     """ Downloads, extracts, and chunks text from ArXiv PDFs. """
+    
+#     all_chunks = []
+
+#     for result in results:
+#         # 用 TemporaryDirectory 替代 NamedTemporaryFile
+#         with tempfile.TemporaryDirectory() as tmpdirname:
+#             tmp_pdf_path = os.path.join(tmpdirname, "tempfile.pdf")
+#             try:
+#                 result.download_pdf(filename=tmp_pdf_path)
+
+#                 loader = PyPDFLoader(tmp_pdf_path)
+#                 papers = loader.load()
+
+#                 full_text = " ".join(p.page_content for p in papers)
+
+#                 text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+#                 paper_chunks = text_splitter.create_documents([full_text])
+
+#                 all_chunks.extend(paper_chunks)
+#                 print(f"Extracted {len(paper_chunks)} chunks from '{result.title}'")
+
+#             except (FileNotFoundError, ConnectionResetError) as e:
+#                 print(f"Error: {e}")
+#                 time.sleep(5)
+
+#     print(f"\nTotal Chunks Extracted: {len(all_chunks)}\n")
+#     return all_chunks
+
 def chunk_papers(results):
     """ Downloads, extracts, and chunks text from ArXiv PDFs. """
     
@@ -104,6 +135,7 @@ def chunk_papers(results):
 
         with tempfile.NamedTemporaryFile(delete=True, suffix=".pdf") as temp_pdf:
             try:
+                temp_pdf.close()
                 result.download_pdf(filename=temp_pdf.name)
 
                 loader = PyPDFLoader(temp_pdf.name)

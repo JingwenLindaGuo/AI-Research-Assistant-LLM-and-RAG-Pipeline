@@ -11,6 +11,8 @@ pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 conversation_history = []  # Stores the last few queries and responses
 document_memory = []  # Stores relevant document chunks for future context
 
+
+
 def retrieve_chunks(query: str, index_obj, top_k: int = 3):
     query_response = embed([{"text": query}])
     query_embedding = query_response[0]["values"]
@@ -20,6 +22,9 @@ def retrieve_chunks(query: str, index_obj, top_k: int = 3):
         include_metadata=True,
         namespace="default"
     )
+
+    print('results: ',results)
+    
     retrieved_chunks = []
     if "matches" in results and results["matches"]:
         for match in results["matches"]:
@@ -29,9 +34,12 @@ def retrieve_chunks(query: str, index_obj, top_k: int = 3):
             }
             retrieved_chunks.append(chunk)
             document_memory.append(chunk)
-    else:
-        print("⚠️ No relevant documents found in Pinecone.")
+    else: 
+        print("! No relevant documents found in Pinecone")
+        return 0
+
     return retrieved_chunks
+
 
 
 
@@ -67,6 +75,9 @@ def prepare_prompt(query: str, retrieved_chunks: list):
 def answer_query(query: str, index_obj, top_k: int = 3):
     # Use index_obj for the query
     retrieved_chunks = retrieve_chunks(query, index_obj, top_k)
+    if retrieved_chunks == 0:
+        return 0
+
     prompt = prepare_prompt(query, retrieved_chunks)
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
     answer = llm.invoke(prompt)
