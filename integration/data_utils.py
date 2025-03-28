@@ -80,11 +80,15 @@ def verify_results(results, filters):
     return verified_results
 
 def chunk_papers(results):
-    """ Downloads, extracts, and chunks text from ArXiv PDFs. """
+    """ Downloads, extracts, and chunks text from ArXiv PDFs, skipping papers without PDFs. """
     
     all_chunks = []
 
     for result in results:
+        # Skip papers that don't have a PDF link
+        if not result.pdf_url:
+            print(f"Skipping '{result.title}' — No PDF available.")
+            continue
 
         with tempfile.NamedTemporaryFile(delete=True, suffix=".pdf") as temp_pdf:
             try:
@@ -99,9 +103,11 @@ def chunk_papers(results):
                 paper_chunks = text_splitter.create_documents([full_text])
 
                 all_chunks.extend(paper_chunks)
+                print(f"Extracted {len(paper_chunks)} chunks from '{result.title}'")
 
-            except (FileNotFoundError, ConnectionResetError) as e:
-                print(f"Error: {e}")
+            except (FileNotFoundError, ConnectionResetError, Exception) as e:
+                print(f"Error processing '{result.title}': {e}")
                 time.sleep(5)
 
+    print(f"\nTotal Chunks Extracted: {len(all_chunks)}\n")
     return all_chunks
