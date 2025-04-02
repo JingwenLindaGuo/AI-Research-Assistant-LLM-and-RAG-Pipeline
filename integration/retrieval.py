@@ -1,8 +1,13 @@
 import os
-from langchain_openai import OpenAIEmbeddings
+#from langchain_openai import OpenAIEmbeddings
+#from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings # supposedly the new,correct import
 from pinecone import Pinecone
-from Embedder import embed
-from langchain_openai import ChatOpenAI
+from integration.Embedder import embed # for script
+#from Embedder import embed # for notebook
+from langchain_community.chat_models import ChatOpenAI # supposedly the new,correct import
+#from langchain_openai import ChatOpenAI
+#from langchain.chat_models import ChatOpenAI    
 
 # Initialize the Pinecone client using the API key from environment variables
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
@@ -11,7 +16,7 @@ pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 conversation_history = []  # Stores the last few queries and responses
 document_memory = []  # Stores relevant document chunks for future context
 
-def retrieve_chunks(query: str, index_obj, top_k: int = 3):
+def retrieve_chunks(query: str, index_obj, top_k: int = 100):
     query_response = embed([{"text": query}])
     query_embedding = query_response[0]["values"]
     results = index_obj.query(
@@ -33,40 +38,39 @@ def retrieve_chunks(query: str, index_obj, top_k: int = 3):
         print("⚠️ No relevant documents found in Pinecone.")
     return retrieved_chunks
 
-
-
-
 def prepare_prompt(query: str, retrieved_chunks: list):
-    """
-    Prepare a prompt by including both past conversation history and document memory.
-    
-    Args:
-        query (str): The current user query.
-        retrieved_chunks (list): The most relevant document chunks retrieved.
-
-    Returns:
-        str: The formatted prompt to pass to the LLM.
-    """
-    # Combine recent conversation history (last 5 exchanges)
-    history_text = "\n".join(conversation_history[-5:])  # Keep the last 5 messages
+    # Retrieve conversation history
+    history_text = "\n".join(conversation_history[-10:])
     conversation_part = f"Conversation history:\n{history_text}\n\n" if history_text else ""
+    
+    # Optionally filter by paper title if mentioned in the query
+    paper_title = None
+    if "typiclust" in query.lower():
+        paper_title = "TypiClust"  # or extract a more precise title if needed
 
-    # Combine relevant document memory (last 5 retrieved documents)
-    memory_text = "\n\n".join([chunk["text"] for chunk in document_memory[-5:]])  # Keep last 5 documents
+    if paper_title:
+        filtered_chunks = [chunk for chunk in document_memory if paper_title.lower() in chunk.get("paper_title", "").lower()]
+    else:
+        filtered_chunks = document_memory
+
+    memory_text = "\n\n".join([chunk["text"] for chunk in filtered_chunks])
     document_part = f"Relevant documents:\n{memory_text}\n\n" if memory_text else ""
-
-    # Construct the final prompt with context and the new query
+    
     prompt = (
         f"{conversation_part}"
         f"{document_part}"
         f"Query: {query}\nAnswer:"
     )
-
     return prompt
 
-def answer_query(query: str, index_obj, top_k: int = 3):
-    # Use index_obj for the query
-    retrieved_chunks = retrieve_chunks(query, index_obj, top_k)
+def answer_query(query: str, index_obj, top_k: int = 100, use_memory: bool = False):
+    if use_memory:
+        # Combine previously stored document memory with fresh retrieval
+        new_retrieval = retrieve_chunks(query, index_obj, top_k)
+        retrieved_chunks = document_memory + new_retrieval
+    else:
+        retrieved_chunks = retrieve_chunks(query, index_obj, top_k)
+    
     prompt = prepare_prompt(query, retrieved_chunks)
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
     answer = llm.invoke(prompt)

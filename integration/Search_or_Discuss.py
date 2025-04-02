@@ -32,7 +32,7 @@ If the user wants to SEARCH:
     "exclude_words": "<Words to exclude or null>",
     "start_date": "<YYYYMMDD or null>",
     "end_date": "<YYYYMMDD or null>",
-    "max_results": "<Maximum results or 10>"
+    "max_results": "<Maximum results or 1>" # they either ask for a certain number of papers or just get 1 paper
     "sort_by": "<'relevance' or 'newest'>"
   },
   "question": "<The user's request for retrieved data>"
