@@ -4,4 +4,9 @@ venv/
 .env
 __pycache__
 evidently.ipynb
-gjwenv
+
+datasets/msmarco/
+gjwenv/
+*.dll
+*.pyd
+*.lib
