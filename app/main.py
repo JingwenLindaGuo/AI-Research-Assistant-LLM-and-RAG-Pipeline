@@ -8,6 +8,8 @@ from typing import Optional
 from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
+from integration.integration import handleUserQuery, index_name
+from integration.integration import cleanup_index
 
 
 # Load environment variables
@@ -18,7 +20,7 @@ MONGO_URI = os.getenv("MONGO_URI")
 # Secret key for JWT token encoding
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 600
 
 # OAuth2 scheme for token authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -133,16 +135,24 @@ def login_user(req: LoginRequest):
 @app.post("/chat")
 def chat_with_llm(req: ChatRequest, username: str = Depends(get_current_user)):
     user_input = req.user_message
-    fake_llm_reply = f"Echo from GPT-4o-mini: {user_input}"
+    
+    result = handleUserQuery(user_input)  # calls the pipeline
+    assistant_msg = result["assistant_message"]
 
-    # 1) Upsert chat document for the user
+    # Save to DB as string
     chat_log_collection.update_one(
         {"username": username},
-        {"$push": {"chat_history": {"user": user_input, "bot": fake_llm_reply}}},
+        {"$push": {"chat_history": {"user": user_input, "bot": assistant_msg}}},
         upsert=True
     )
 
-    return {"assistant_message": fake_llm_reply}
+    return {"assistant_message": assistant_msg}
+
+@app.on_event("shutdown")
+def on_shutdown():
+    cleanup_index()
+    print("[main] ephemeral index removed.")
+
 
 # Get chat history endpoint
 @app.get("/get_chat_history")
