@@ -17,3 +17,6 @@ def embed(data):
         model="text-embedding-3-small"
     )
     return [{"values": item.embedding} for item in response.data]  
+
+def batch_embedding():
+    return
