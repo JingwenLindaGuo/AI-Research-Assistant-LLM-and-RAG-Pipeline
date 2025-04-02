@@ -32,7 +32,7 @@ If the user wants to SEARCH:
     "exclude_words": "<Words to exclude or null>",
     "start_date": "<YYYYMMDD or null>",
     "end_date": "<YYYYMMDD or null>",
-    "max_results": "<Maximum results or 10>"
+    "max_results": "<Maximum results or 2>"
     "sort_by": "<'relevance' or 'newest'>"
   },
   "question": "<The user's request for retrieved data>"
