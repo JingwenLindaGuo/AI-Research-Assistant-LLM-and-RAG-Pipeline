@@ -1,0 +1,268 @@
+,question,comparison_index,retrieved_result,reference_paragraph,cosine_similarity
+0,Search for the question: Describe the K-means clustering algorithm.,1,"centroids. The standard k-means method [2] attempts to produce such a c lustering of the
+data points that the sum of squared centroid distances ∑ n
+i=1 ||pi − zi||2 is minimized.
+The main diﬃculty of this method is that it requires the data p oints to be the elements
+of a Euclidean space, since we need to average the data points somehow. A generalization
+of k-means called relational k-means has been proposed [3] to address this issue. This","The process, which is called 'k-means,' appears to give partitions which are reasonably efficient in the sense of within-class variance… Also, the k-means procedure is easily programmed and is computationally economical, so that it is feasible to process very large samples on a digital computer?",0.58256596326828
+1,Search for the question: Describe the K-means clustering algorithm.,2,"centroids. The standard k-means method [2] attempts to produce such a c lustering of the
+data points that the sum of squared centroid distances ∑ n
+i=1 ||pi − zi||2 is minimized.
+The main diﬃculty of this method is that it requires the data p oints to be the elements
+of a Euclidean space, since we need to average the data points somehow. A generalization
+of k-means called relational k-means has been proposed [3] to address this issue. This","Stated informally, the k-means procedure consists of simply starting with k groups each of which consists of a single random point, and thereafter adding each new point to the group whose mean the new point is nearest. After a point is added to a group, the mean of that group is adjusted in order to take account of the new point?",0.639873743057251
+2,Search for the question: Describe the K-means clustering algorithm.,3,"centroids. The standard k-means method [2] attempts to produce such a c lustering of the
+data points that the sum of squared centroid distances ∑ n
+i=1 ||pi − zi||2 is minimized.
+The main diﬃculty of this method is that it requires the data p oints to be the elements
+of a Euclidean space, since we need to average the data points somehow. A generalization
+of k-means called relational k-means has been proposed [3] to address this issue. This","Perhaps the most obvious application of the k-means process is to the problem of ""similarity grouping"" or ""clustering."" The point of view taken in this application is not to find some unique, definitive grouping, but rather to simply aid the investigator in obtaining qualitative and quantitative understanding of large amounts of N-dimensional data?",0.6690206527709961
+3,Search for the question: Explain the Typiclust algorithm,1,"low-budget regime. Using TypiClust in the semi-
+supervised framework, performance gets an even
+more signiﬁcant boost. In particular, state-of-the-
+art semi-supervised methods trained on CIFAR-
+10 with 10 labeled examples selected by Typi-
+Clust, reach 93.2% accuracy – an improvement of
+39.4% over random selection. Code is available
+at https://github.com/avihu111/TypiClust.
+1. Introduction
+Recent years have witnessed the emergence of deep learning","TypiClust is composed of three steps: (1) Representation learning: learn a semantically meaningful feature space using self-supervised learning. (2) Clustering: partition the data to ensure diversity. (3) Query: select the most typical examples (i.e., dense points) from the largest uncovered clusters",0.517177939414978
+4,Search for the question: Explain the Typiclust algorithm,2,"low-budget regime. Using TypiClust in the semi-
+supervised framework, performance gets an even
+more signiﬁcant boost. In particular, state-of-the-
+art semi-supervised methods trained on CIFAR-
+10 with 10 labeled examples selected by Typi-
+Clust, reach 93.2% accuracy – an improvement of
+39.4% over random selection. Code is available
+at https://github.com/avihu111/TypiClust.
+1. Introduction
+Recent years have witnessed the emergence of deep learning","To capture the principle of max density, we define the Typicality of an example by the inverse of the average Euclidean distance to its K nearest neighbors. That is, typical points are those located in high-density areas of the feature space, and thus likely to be representative of the data distribution",0.19777175784111023
+5,Search for the question: Explain the Typiclust algorithm,3,"low-budget regime. Using TypiClust in the semi-
+supervised framework, performance gets an even
+more signiﬁcant boost. In particular, state-of-the-
+art semi-supervised methods trained on CIFAR-
+10 with 10 labeled examples selected by Typi-
+Clust, reach 93.2% accuracy – an improvement of
+39.4% over random selection. Code is available
+at https://github.com/avihu111/TypiClust.
+1. Introduction
+Recent years have witnessed the emergence of deep learning","Algorithm 1: Given an unlabeled pool and a budget B, first learn representations, then cluster the embedding space into B clusters. For each cluster, select the example with the highest typicality. This yields B diverse and representative samples for labeling?",0.37769538164138794
+6,Search for the question: What is the Support Vector Machine (SVM) and how does it work?,1,"which can learn a suitable piece-wise linear loss
+function according to nature of the given training
+set. The k-PL-SVM models are general SVM
+models and existing popular SVM models, like
+C-SVM, LS-SVM and Pin-SVM models, are their
+particular cases. We have performed the extensive
+numerical experiments with k-PL-SVM models
+for k= 2 and 3 and shown that they are improve-
+ment over existing SVM models.
+Support Vector Machine (SVM) models (Cortes & Vapnik,",The support-vector network implements the following idea: it maps the input vectors into some high dimensional feature space Z through some non-linear mapping chosen a priori. In this space a linear decision surface is constructed with special properties that ensure high generalization ability of the network.,0.48221319913864136
+7,Search for the question: What is the Support Vector Machine (SVM) and how does it work?,2,"which can learn a suitable piece-wise linear loss
+function according to nature of the given training
+set. The k-PL-SVM models are general SVM
+models and existing popular SVM models, like
+C-SVM, LS-SVM and Pin-SVM models, are their
+particular cases. We have performed the extensive
+numerical experiments with k-PL-SVM models
+for k= 2 and 3 and shown that they are improve-
+ment over existing SVM models.
+Support Vector Machine (SVM) models (Cortes & Vapnik,","An optimal hyperplane is here defined as the linear decision function with maximal margin between the vectors of the two classes. It was observed that to construct such optimal hyperplanes one only has to take into account a small amount of the training data, the so called support vectors, which determine this margin.",0.4656909108161926
+8,Search for the question: What is the Support Vector Machine (SVM) and how does it work?,3,"which can learn a suitable piece-wise linear loss
+function according to nature of the given training
+set. The k-PL-SVM models are general SVM
+models and existing popular SVM models, like
+C-SVM, LS-SVM and Pin-SVM models, are their
+particular cases. We have performed the extensive
+numerical experiments with k-PL-SVM models
+for k= 2 and 3 and shown that they are improve-
+ment over existing SVM models.
+Support Vector Machine (SVM) models (Cortes & Vapnik,","Using different dot-products K(u, v) one can construct different learning machines with arbitrary types of decision surfaces. The decision surface of these machines has a form ∑ ai K(xi, x), where xi is the image of a support vector and ai is its weight. The only difference is that instead of computing dot-products directly, kernels are used.",0.4863075613975525
+9,Search for the question: Describe the backpropagation algorithm used in neural networks.,1,"ZORB: A Derivative-Free Backpropagation
+Algorithm for Neural Networks
+Varun Ranganathan
+Department of Computing Science
+University of Alberta
+Edmonton, AB T6G 2E8
+vrangana@ualberta.ca
+Alex Lewandowski
+Department of Computing Science
+University of Alberta
+Edmonton, AB T6G 2E8
+lewandowski@ualberta.ca
+Abstract
+Gradient descent and backpropagation have enabled neural networks to achieve
+remarkable results in many real-world applications. Despite ongoing success,",Introduces backpropagation as a method for error propagation.,0.5440762042999268
+10,Search for the question: Describe the backpropagation algorithm used in neural networks.,2,"ZORB: A Derivative-Free Backpropagation
+Algorithm for Neural Networks
+Varun Ranganathan
+Department of Computing Science
+University of Alberta
+Edmonton, AB T6G 2E8
+vrangana@ualberta.ca
+Alex Lewandowski
+Department of Computing Science
+University of Alberta
+Edmonton, AB T6G 2E8
+lewandowski@ualberta.ca
+Abstract
+Gradient descent and backpropagation have enabled neural networks to achieve
+remarkable results in many real-world applications. Despite ongoing success,","The backward pass which propagates derivatives from the top layer back to the bottom one is more complicated. We start by computing ?E/?y for the output units, apply the chain rule to get ?E/?x, then compute how error changes with respect to weights: ?E/?w = ?E/?x × y. This process repeats layer by layer to update weights across the network.",0.4411196708679199
+11,Search for the question: Describe the backpropagation algorithm used in neural networks.,3,"ZORB: A Derivative-Free Backpropagation
+Algorithm for Neural Networks
+Varun Ranganathan
+Department of Computing Science
+University of Alberta
+Edmonton, AB T6G 2E8
+vrangana@ualberta.ca
+Alex Lewandowski
+Department of Computing Science
+University of Alberta
+Edmonton, AB T6G 2E8
+lewandowski@ualberta.ca
+Abstract
+Gradient descent and backpropagation have enabled neural networks to achieve
+remarkable results in many real-world applications. Despite ongoing success,",The simplest version of gradient descent is to change each weight by an amount proportional to the accumulated ?E/?w:,0.42608797550201416
+12,Search for the question: What are Convolutional Neural Networks (CNN) and their main applications?,1,"convolution) as far as we know.
+1 Introduction
+In recent years, many deep learning applications are meant for edge computing platforms, such as mobile phones
+and smart IoTs. One notable group of these applications is related to computer vision like object recognition, object
+tracking, face recognition, and art style transfer. As most of these applications are time-critical, executing them on","Convolutional neural networks (CNNs) constitute one such class of models. Their capacity can be controlled by varying their depth and breadth, and they also make strong and mostly correct assumptions about the nature of images (namely, stationarity of statistics and locality of pixel dependencies).",0.5797929167747498
+13,Search for the question: What are Convolutional Neural Networks (CNN) and their main applications?,2,"convolution) as far as we know.
+1 Introduction
+In recent years, many deep learning applications are meant for edge computing platforms, such as mobile phones
+and smart IoTs. One notable group of these applications is related to computer vision like object recognition, object
+tracking, face recognition, and art style transfer. As most of these applications are time-critical, executing them on","We trained a large, deep convolutional neural network to classify the 1.2 million high-resolution images in the ImageNet LSVRC-2010 contest into the 1000 different classes.",0.5029507279396057
+14,Search for the question: What are Convolutional Neural Networks (CNN) and their main applications?,3,"convolution) as far as we know.
+1 Introduction
+In recent years, many deep learning applications are meant for edge computing platforms, such as mobile phones
+and smart IoTs. One notable group of these applications is related to computer vision like object recognition, object
+tracking, face recognition, and art style transfer. As most of these applications are time-critical, executing them on","To learn about thousands of objects from millions of images, we need a model with a large learning capacity. [...] CNNs have much fewer connections and parameters and so they are easier to train, while their theoretically-best performance is likely to be only slightly worse.",0.5104308724403381
+15,Search for the question: Explain the concept of Reinforcement Learning.,1,"long reinforcement learning are provided, along
+with a simplistic prototype lifelong reinforcement
+learning system.
+1. Introduction
+An agent is an abstraction of a decision-maker. At each time
+instance t, it receives an observation ot ∈O, and outputs an
+action at ∈Ato be carried out in the environment it lives in.
+Here, Ois the (ﬁnite) set of possible observations the agent
+can receive, and Ais the (ﬁnite) set of actions the agent can
+choose from. An agent’s observationot depends on the cur-",Reinforcement learning problems involve learning what to do—how to map situations to actions—so as to maximize a numerical reward signal. The learner is not told which actions to take but must discover which yield the most reward by trying them. Actions may affect not only the immediate reward but also the next situation and all subsequent rewards,0.5832434892654419
+16,Search for the question: Explain the concept of Reinforcement Learning.,2,"long reinforcement learning are provided, along
+with a simplistic prototype lifelong reinforcement
+learning system.
+1. Introduction
+An agent is an abstraction of a decision-maker. At each time
+instance t, it receives an observation ot ∈O, and outputs an
+action at ∈Ato be carried out in the environment it lives in.
+Here, Ois the (ﬁnite) set of possible observations the agent
+can receive, and Ais the (ﬁnite) set of actions the agent can
+choose from. An agent’s observationot depends on the cur-","The reinforcement learning problem is meant to be a straightforward framing of the problem of learning from interaction to achieve a goal. The agent interacts with the environment by taking actions and receiving rewards and new states, aiming to maximize cumulative reward over time",0.6935439109802246
+17,Search for the question: Explain the concept of Reinforcement Learning.,3,"long reinforcement learning are provided, along
+with a simplistic prototype lifelong reinforcement
+learning system.
+1. Introduction
+An agent is an abstraction of a decision-maker. At each time
+instance t, it receives an observation ot ∈O, and outputs an
+action at ∈Ato be carried out in the environment it lives in.
+Here, Ois the (ﬁnite) set of possible observations the agent
+can receive, and Ais the (ﬁnite) set of actions the agent can
+choose from. An agent’s observationot depends on the cur-","A reward signal defines the goal in a reinforcement learning problem. At each time step, the environment sends to the agent a single number, a reward. The agent’s objective is to maximize the total reward it receives. The only way to influence the reward is by acting in the environment?",0.46713268756866455
+18,Search for the question: What is the difference between Type I and Type II errors in hypothesis testing?,1,"3ãoPAULo (2017/03363-8)
+DESPITEITSCOMMONPRACTICE,STATISTICALHyPOTHESISTESTING
+PRESENTSCHALLENGESININTERPRETATION.&ORINSTANCE,INTHE
+STANDARDFREqUENTISTFRAMEWORKTHEREISNOCONTROLOFTHE
+TyPE))ERROR. ASARESULT,THENON-REJECTIONOFTHENULLHy-
+POTHESIS(H0)CANNOTREASONABLyBEINTERPRETEDASITSACCEP-
+TANCE.7EPROPOSETHATTHISDILEMMACANBEOVERCOMEBy
+USINGAGNOSTICHyPOTHESISTESTS,SINCETHEyCANCONTROLTHE
+TyPE)AND))ERRORSSIMULTANEOUSLy. )NORDERTOMAKETHIS
+IDEAOPERATIONAL,WESHOWHOWTOOBTAINAGNOSTICHyPOTH-","These errors will be of two kinds: (I) we reject H? when it is true, (II) we accept H? when some alternative H? is true. The problem before us is to consider how these errors may be best controlled.",0.46617722511291504
+19,Search for the question: What is the difference between Type I and Type II errors in hypothesis testing?,2,"3ãoPAULo (2017/03363-8)
+DESPITEITSCOMMONPRACTICE,STATISTICALHyPOTHESISTESTING
+PRESENTSCHALLENGESININTERPRETATION.&ORINSTANCE,INTHE
+STANDARDFREqUENTISTFRAMEWORKTHEREISNOCONTROLOFTHE
+TyPE))ERROR. ASARESULT,THENON-REJECTIONOFTHENULLHy-
+POTHESIS(H0)CANNOTREASONABLyBEINTERPRETEDASITSACCEP-
+TANCE.7EPROPOSETHATTHISDILEMMACANBEOVERCOMEBy
+USINGAGNOSTICHyPOTHESISTESTS,SINCETHEyCANCONTROLTHE
+TyPE)AND))ERRORSSIMULTANEOUSLy. )NORDERTOMAKETHIS
+IDEAOPERATIONAL,WESHOWHOWTOOBTAINAGNOSTICHyPOTH-","There is an essential difference in character between errors of type I and type II. If a true hypothesis is rejected, a mistake has been made whose consequence will generally be the same [...] all errors of type I may be described as equivalent. On the other hand, if H? is accepted when some alternative H? is true, the consequences depend on how much H? differs from H?.",0.35042479634284973
+20,Search for the question: What is the difference between Type I and Type II errors in hypothesis testing?,3,"3ãoPAULo (2017/03363-8)
+DESPITEITSCOMMONPRACTICE,STATISTICALHyPOTHESISTESTING
+PRESENTSCHALLENGESININTERPRETATION.&ORINSTANCE,INTHE
+STANDARDFREqUENTISTFRAMEWORKTHEREISNOCONTROLOFTHE
+TyPE))ERROR. ASARESULT,THENON-REJECTIONOFTHENULLHy-
+POTHESIS(H0)CANNOTREASONABLyBEINTERPRETEDASITSACCEP-
+TANCE.7EPROPOSETHATTHISDILEMMACANBEOVERCOMEBy
+USINGAGNOSTICHyPOTHESISTESTS,SINCETHEyCANCONTROLTHE
+TyPE)AND))ERRORSSIMULTANEOUSLy. )NORDERTOMAKETHIS
+IDEAOPERATIONAL,WESHOWHOWTOOBTAINAGNOSTICHyPOTH-","We are influenced by the consequences which follow from a wrong decision; some errors will matter more than others. All errors of type I may be regarded as equivalent, while those of type II will be of differing quality according to the extent to which the alternative hypothesis which is true varies from that which is tested.",0.32159101963043213
+21,Search for the question: How does the Gradient Descent optimization algorithm work?,1,"GRADIENT DESCENT IN SOME SIMPLE SETTINGS
+Y. COOPER
+Abstract. In this note, we observe the behavior of gradient ﬂow and discrete and noisy gradient
+descent in some simple settings. It is commonly noted that addition of noise to gradient descent
+can aﬀect the trajectory of gradient descent. Here, we run some computer experiments for gradient
+descent on some simple functions, and observe this principle in some concrete examples.
+1. Introduction","The simplest minimization procedure in such a setting is the gradient descent algorithm where W is iteratively adjusted as follows:
+
+W_{k} = W_{k-1} - \eta \cdot \frac{\partial E(W)}{\partial W} ]
+
+In the simplest case, η is a scalar constant.",0.46520984172821045
+22,Search for the question: How does the Gradient Descent optimization algorithm work?,2,"GRADIENT DESCENT IN SOME SIMPLE SETTINGS
+Y. COOPER
+Abstract. In this note, we observe the behavior of gradient ﬂow and discrete and noisy gradient
+descent in some simple settings. It is commonly noted that addition of noise to gradient descent
+can aﬀect the trajectory of gradient descent. Here, we run some computer experiments for gradient
+descent on some simple functions, and observe this principle in some concrete examples.
+1. Introduction","Gradient-Based Learning draws on the fact that it is generally much easier to minimize a reasonably smooth, continuous function than a discrete one. The loss function can be minimized by estimating the impact of small variations of the parameter values on the loss function.",0.6463941931724548
+23,Search for the question: How does the Gradient Descent optimization algorithm work?,3,"1. Introduction
+In this note, we are interested in the behavior of discrete and noisy gradient descent in settings
+where there are minima with diﬀerent characteristics. To study this in a very simple setting, we
+consider gradient descent on two periodic functions. The ﬁrst we consider is
+f(x) = sin(πx) + cos(2πx) + 2.
+This function is periodic, and has wells of two diﬀerent depths, and slightly diﬀerent widths as well.","A popular minimization procedure is the stochastic gradient algorithm, also called the on-line update. It consists in updating the parameter vector using a noisy, or approximated, version of the average gradient. In the most common instance, W is updated on the basis of a single sample.",0.3835099935531616
+24,Search for the question: What is Overfitting in machine learning and how can it be prevented?,1,"vide recommendations for possible solutions. We
+cover student misconceptions about overﬁtting,
+about solutions to overﬁtting, and implementation
+mistakes that are commonly confused with over-
+ﬁtting issues. We expect that our paper can con-
+tribute to improving student understanding and
+lectures about this important topic.
+1. Introduction
+Machine Learning has had large advances in the last years,
+fueled by large datasets, large models, and lots of compu-","Overfitting is the use of models or procedures that violate parsimony—that is, that include more terms than are necessary or use more complicated approaches than are necessary. It is helpful to distinguish two types of overfitting: using a model that is more flexible than it needs to be; using a model that includes irrelevant components.",0.4842619001865387
+25,Search for the question: What is Overfitting in machine learning and how can it be prevented?,2,"vide recommendations for possible solutions. We
+cover student misconceptions about overﬁtting,
+about solutions to overﬁtting, and implementation
+mistakes that are commonly confused with over-
+ﬁtting issues. We expect that our paper can con-
+tribute to improving student understanding and
+lectures about this important topic.
+1. Introduction
+Machine Learning has had large advances in the last years,
+fueled by large datasets, large models, and lots of compu-","Overfitting is undesirable for a number of reasons. Adding predictors that perform no useful function wastes resources and can lead to prediction mistakes. Irrelevant predictors may cause worse decisions, and fitted coefficients on them add random variation to predictions.",0.4459992051124573
+26,Search for the question: What is Overfitting in machine learning and how can it be prevented?,3,"vide recommendations for possible solutions. We
+cover student misconceptions about overﬁtting,
+about solutions to overﬁtting, and implementation
+mistakes that are commonly confused with over-
+ﬁtting issues. We expect that our paper can con-
+tribute to improving student understanding and
+lectures about this important topic.
+1. Introduction
+Machine Learning has had large advances in the last years,
+fueled by large datasets, large models, and lots of compu-",Some sort of out-of-sample prediction is essential in getting an honest picture of a model’s predictive ability. A resubstitution error much smaller than the out-of-sample error suggests high model flexibility and is one warning sign of overfitting. Cross-validation and holdout validation are recommended to assess model generalization.,0.4280141294002533
+27,Search for the question: what is concept of Transfer Learning in deep learning.,1,"Such an ability to acquire and reuse knowledge is known as transferability in deep learning.
+It has formed the long-term quest towards making deep learning as data-eﬃcient as human
+learning, and has been motivating fruitful design of more powerful deep learning algorithms.
+We present this survey to connect diﬀerent isolated areas in deep learning with their relation
+to transferability, and to provide a uniﬁed and complete view to investigating transferability","Definition 1 (Transfer Learning) Given a source domain DS and learning task TS, a target domain DT and learning task TT, transfer learning aims to help improve the learning of the target predictive function fT (·) in DT using the knowledge in DS and TS, where DS ≠ DT, or TS ≠ TT",0.49652403593063354
+28,Search for the question: what is concept of Transfer Learning in deep learning.,2,"Such an ability to acquire and reuse knowledge is known as transferability in deep learning.
+It has formed the long-term quest towards making deep learning as data-eﬃcient as human
+learning, and has been motivating fruitful design of more powerful deep learning algorithms.
+We present this survey to connect diﬀerent isolated areas in deep learning with their relation
+to transferability, and to provide a uniﬁed and complete view to investigating transferability","In 2005, the Broad Agency Announcement (BAA) 05-29 of DARPA’s IPTO gave a new mission of transfer learning: the ability of a system to recognize and apply knowledge and skills learned in previous tasks to novel tasks. In contrast to multi-task learning, transfer learning cares most about the target task. The roles of the source and target tasks are no longer symmetric?",0.47626298666000366
+29,Search for the question: what is concept of Transfer Learning in deep learning.,3,"Such an ability to acquire and reuse knowledge is known as transferability in deep learning.
+It has formed the long-term quest towards making deep learning as data-eﬃcient as human
+learning, and has been motivating fruitful design of more powerful deep learning algorithms.
+We present this survey to connect diﬀerent isolated areas in deep learning with their relation
+to transferability, and to provide a uniﬁed and complete view to investigating transferability","Transfer learning is motivated by the fact that people can intelligently apply knowledge learned previously to solve new problems faster or with better solutions. It allows the domains, tasks, and distributions used in training and testing to be different",0.6082358956336975
