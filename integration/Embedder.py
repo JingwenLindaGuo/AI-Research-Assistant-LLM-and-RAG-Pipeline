@@ -18,22 +18,22 @@ def embed(data):
     )
     return [{"values": item.embedding} for item in response.data]  
 
-def batch_embedding(text_chunks):
+def batch_embedding(text_chunks): 
 
     embedding_list = []
-    batch_size = 500
-    total_chunks = len(text_chunks)
+    batch_size = 500 
+    total_items = len(text_chunks)
 
-    for i in range(0, total_chunks, batch_size):
+    for i in range(0, total_items, batch_size):
+        batch_data = text_chunks[i:min( i + batch_size, total_items)]
+        batch_texts = [item['text'] for item in batch_data]
 
-        batch = text_chunks[i:min( i + batch_size, total_chunks)]
+        print(f"Processing batch {i // batch_size + 1}/{(total_items + batch_size - 1) // batch_size} (items {i+1}-{min(i + batch_size, total_items)})")
 
-        print(f"Processing batch {i // batch_size + 1}/{(total_chunks + batch_size - 1) // batch_size} (chunks {i+1}-{min(i + batch_size, total_chunks)})")
-        
         try:
             response = client.embeddings.create(
                 model="text-embedding-3-small",
-                input=batch
+                input=batch_texts  
             )
 
             # Extract embeddings from the response
@@ -42,5 +42,5 @@ def batch_embedding(text_chunks):
 
         except Exception as e:
             print(f"An error occurred processing batch starting at index {i}: {e}")
-            break 
-    return embedding_list
+            break
+    return embedding_list 
