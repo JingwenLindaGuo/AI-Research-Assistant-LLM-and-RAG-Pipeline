@@ -12,15 +12,9 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Define system message
 SYSTEM_PROMPT = """\
 You are a helpful assistant for academic research. 
-Your job is to determine whether the user is requesting to:
-1) Search for new research papers, or 
-2) Discuss or analyze already-retrieved papers.
+Your job is to extract information from the user's input and output it in valid JSON using the following format:
 
-Output your answer in valid JSON, using the following schema:
-
-If the user wants to SEARCH:
 {
-  "action": "search",
   "filters": {
     "query": "<Main search topic>",
     "author": "<Author name or null>",
@@ -32,16 +26,10 @@ If the user wants to SEARCH:
     "exclude_words": "<Words to exclude or null>",
     "start_date": "<YYYYMMDD or null>",
     "end_date": "<YYYYMMDD or null>",
-    "max_results": "<Maximum results or 1>" # they either ask for a certain number of papers or just get 1 paper
+    "max_results": "<Maximum results or 1>",
     "sort_by": "<'relevance' or 'newest'>"
   },
   "question": "<The user's request for retrieved data>"
-}
-
-If the user wants to DISCUSS:
-{
-  "action": "discuss",
-  "question": "<the user question or statement>"
 }
 
 Rules:
@@ -73,21 +61,4 @@ def classify_and_extract(user_input):
             "error": "Invalid JSON returned by GPT-4o",
             "raw_response": assistant_message
         }
-    
-# # Example user input asking for a search
-# user_input_1 = "Find me papers about quantum computing by John Smith published after 2020."
-# result_1 = classify_and_extract(user_input_1)
-# print("User request 1:", user_input_1)
-# print("LLM response :", result_1)
-
-# # Example user input discussing an existing paper
-# user_input_2 = "What are the main conclusions of the paper about deep learning we found?"
-# result_2 = classify_and_extract(user_input_2)
-# print("\nUser request 2:", user_input_2)
-# print("LLM response :", result_2)
-
-# # Example user input asking for search
-# user_input_3 = "Get me the latest papers on machine learning that don't have image generation in them"
-# result_3 = classify_and_extract(user_input_3)
-# print("\nUser request 3:", user_input_3)
-# print("LLM response :", result_3)
+ 

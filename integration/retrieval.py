@@ -24,7 +24,7 @@ def retrieve_chunks(query: str, index_obj, top_k: int = 100):
         top_k=top_k,
         include_metadata=True,
         namespace="default"
-    )
+    ) 
     retrieved_chunks = []
     if "matches" in results and results["matches"]:
         for match in results["matches"]:
@@ -35,7 +35,7 @@ def retrieve_chunks(query: str, index_obj, top_k: int = 100):
             retrieved_chunks.append(chunk)
             document_memory.append(chunk)
     else:
-        print("⚠️ No relevant documents found in Pinecone.")
+        print("⚠️ No relevant documents found in Pinecone.") 
     return retrieved_chunks
 
 def prepare_prompt(query: str, retrieved_chunks: list):
@@ -45,8 +45,8 @@ def prepare_prompt(query: str, retrieved_chunks: list):
     
     # Optionally filter by paper title if mentioned in the query
     paper_title = None
-    if "typiclust" in query.lower():
-        paper_title = "TypiClust"  # or extract a more precise title if needed
+    # if "typiclust" in query.lower():
+    #     paper_title = "TypiClust"  # or extract a more precise title if needed
 
     if paper_title:
         filtered_chunks = [chunk for chunk in document_memory if paper_title.lower() in chunk.get("paper_title", "").lower()]
