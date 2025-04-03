@@ -44,11 +44,20 @@ def fetch_papers(filters):
     results = list(client.results(search))
     return results
 
+stored_paper_titles = set()
+
 def verify_results(results, filters):
     """ Verifies if fetched papers match the filters and prints details. """
     verified_results = []  # Store matching papers
 
     for result in results:
+        paper_title = result.title
+
+        # If paper has been retrieved before, skip the paper
+        if paper_title in stored_paper_titles:
+            print(f"Skipping '{paper_title}' — Already stored.")
+            continue    
+
         paper_title = result.title
         paper_author_list = [author.name for author in result.authors]
         paper_abstract = result.summary
@@ -72,8 +81,10 @@ def verify_results(results, filters):
         # Add paper if it meets all criteria
         if all(match_results.values()):
             verified_results.append(result)
+            stored_paper_titles.add(paper_title)
 
     return verified_results
+
 
 def chunk_papers(results):
     """ Downloads, extracts, and chunks text from ArXiv PDFs, skipping papers without PDFs. """
