@@ -86,6 +86,7 @@ def chunk_papers(results):
 
         with tempfile.NamedTemporaryFile(delete=True, suffix=".pdf") as temp_pdf:
             try:
+                temp_pdf.close()
                 result.download_pdf(filename=temp_pdf.name)
                 loader = PyPDFLoader(temp_pdf.name)
                 papers = loader.load()

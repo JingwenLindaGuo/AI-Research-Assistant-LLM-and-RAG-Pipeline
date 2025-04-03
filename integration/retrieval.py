@@ -1,8 +1,13 @@
 import os
-from langchain_openai import OpenAIEmbeddings
+#from langchain_openai import OpenAIEmbeddings
+#from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings # supposedly the new,correct import
 from pinecone import Pinecone
-from Embedder import embed
-from langchain_openai import ChatOpenAI
+# from integration.Embedder import embed # for script
+from Embedder import embed # for notebook
+from langchain_community.chat_models import ChatOpenAI # supposedly the new,correct import
+#from langchain_openai import ChatOpenAI
+#from langchain.chat_models import ChatOpenAI    
 
 # Initialize the Pinecone client using the API key from environment variables
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
