@@ -55,6 +55,7 @@ def retrieve_chunks(query: str, index_obj, top_k: int = 100):
                     }
                 retrieved_chunks.append(chunk)
                 document_memory.append(chunk)
+                print("After retrying, relevant documents are found")
             else:
                 print("⚠️ Still! No relevant documents found in Pinecone.") 
             

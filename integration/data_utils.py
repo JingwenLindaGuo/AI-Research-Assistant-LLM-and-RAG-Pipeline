@@ -86,7 +86,7 @@ def verify_results(results, filters):
         # Add paper if it meets all criteria
         if all(match_results.values()):
             verified_results.append(result)
-            stored_paper_titles.add(paper_title) # commented out for testing
+            # stored_paper_titles.add(paper_title) # commented out for testing
 
     return verified_results
 
