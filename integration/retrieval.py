@@ -8,7 +8,7 @@ from Embedder import embed # for notebook
 from langchain_community.chat_models import ChatOpenAI # supposedly the new,correct import
 #from langchain_openai import ChatOpenAI
 #from langchain.chat_models import ChatOpenAI    
-
+from time import sleep
 # Initialize the Pinecone client using the API key from environment variables
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
@@ -17,6 +17,7 @@ conversation_history = []  # Stores the last few queries and responses
 document_memory = []  # Stores relevant document chunks for future context
 
 def retrieve_chunks(query: str, index_obj, top_k: int = 100):
+    tries = 0
     query_response = embed([{"text": query}])
     query_embedding = query_response[0]["values"]
     results = index_obj.query(
@@ -35,7 +36,28 @@ def retrieve_chunks(query: str, index_obj, top_k: int = 100):
             retrieved_chunks.append(chunk)
             document_memory.append(chunk)
     else:
-        print("⚠️ No relevant documents found in Pinecone.") 
+        print("⚠️ No relevant documents found in Pinecone, wait for 5 seconds and trying again...") 
+        sleep(5)
+        if tries == 0:
+            tries +=1
+            results = index_obj.query(
+            vector=query_embedding,
+            top_k=top_k,
+            include_metadata=True,
+            namespace="default"
+            ) 
+            retrieved_chunks = []
+            if "matches" in results and results["matches"]:
+                for match in results["matches"]:
+                    chunk = {
+                        "text": match["metadata"].get("text", "No text available"),
+                        "source": match["metadata"].get("source", "Unknown source")
+                    }
+                retrieved_chunks.append(chunk)
+                document_memory.append(chunk)
+            else:
+                print("⚠️ Still! No relevant documents found in Pinecone.") 
+            
     return retrieved_chunks
 
 def prepare_prompt(query: str, retrieved_chunks: list):
