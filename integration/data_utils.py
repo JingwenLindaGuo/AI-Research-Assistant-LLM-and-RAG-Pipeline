@@ -6,7 +6,12 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 def format_query(filters):
     """ Builds an ArXiv API query string from filter dictionary. """
-    search_parts = [filters.get('query')]  # Base query
+    if filters.get('query'):
+        search_parts = [filters.get('query')]  # Base query
+    else:
+        print("Query not detected")
+        return 0
+    
     if filters.get('author'):
         search_parts.append(f'au:"{filters["author"]}"')
     if filters.get('title'):
@@ -82,6 +87,7 @@ def verify_results(results, filters):
         if all(match_results.values()):
             verified_results.append(result)
             stored_paper_titles.add(paper_title)
+            print('added ',paper_title,' to prevent searching it next time')
 
     return verified_results
 
