@@ -115,10 +115,7 @@ def chunk_papers(results):
 
                 # Tag each chunk with paper metadata and store content under "text"
                 for i, chunk in enumerate(paper_chunks):
-                    if isinstance(chunk, dict):
-                        content = chunk.get("page_content", "")
-                    else:
-                        content = getattr(chunk, "page_content", "")
+                    content = getattr(chunk, "page_content", "")
                     all_chunks.append({
                         "text": content,
                         "paper_title": result.title,
