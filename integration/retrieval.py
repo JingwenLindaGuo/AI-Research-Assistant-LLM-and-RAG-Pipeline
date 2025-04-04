@@ -35,7 +35,27 @@ def retrieve_chunks(query: str, index_obj, top_k: int = 100):
             retrieved_chunks.append(chunk)
             document_memory.append(chunk)
     else:
-        print("⚠️ No relevant documents found in Pinecone.") 
+        print("⚠️ No relevant documents found in Pinecone, wait for 5 seconds and trying again...") 
+        sleep(5)
+        if tries == 0:
+            tries +=1
+            results = index_obj.query(
+            vector=query_embedding,
+            top_k=top_k,
+            include_metadata=True,
+            namespace="default"
+            ) 
+            retrieved_chunks = []
+            if "matches" in results and results["matches"]:
+                for match in results["matches"]:
+                    chunk = {
+                        "text": match["metadata"].get("text", "No text available"),
+                        "source": match["metadata"].get("source", "Unknown source")
+                    }
+                retrieved_chunks.append(chunk)
+                document_memory.append(chunk)
+            else:
+                print("⚠️ Still! No relevant documents found in Pinecone.")
     return retrieved_chunks
 
 def prepare_prompt(query: str, retrieved_chunks: list):
