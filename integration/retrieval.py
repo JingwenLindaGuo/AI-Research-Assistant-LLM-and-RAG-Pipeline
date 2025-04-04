@@ -86,6 +86,57 @@ def prepare_prompt(query: str, retrieved_chunks: list):
     )
     return prompt
 
+
+from transformers import GPT2TokenizerFast
+tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+
+def truncate_prompt(prompt, max_tokens=128000):
+    tokens = tokenizer.encode(prompt)
+    if len(tokens) > max_tokens:
+        print("Max tokens exceeded, truncate prompt to 128000")
+        tokens = tokens[:max_tokens]
+    return tokenizer.decode(tokens)
+
+
+import os 
+
+def call_llm(): 
+    experiment_group = os.getenv("EXPERIMENT_GROUP", "balanced").lower()
+    
+    if experiment_group == "conservative":
+        temperature = 0.2
+        top_p = 1.0
+        max_tokens = 1000
+        frequency_penalty = 0.0
+        presence_penalty = 0.0
+    elif experiment_group == "balanced":
+        temperature = 0.5
+        top_p = 0.9
+        max_tokens = 1200
+        frequency_penalty = 0.1
+        presence_penalty = 0.1
+    elif experiment_group == "open":
+        temperature = 0.7
+        top_p = 0.8
+        max_tokens = 1500
+        frequency_penalty = 0.0
+        presence_penalty = 0.0 
+
+    print(f"Using experiment group: {experiment_group}")
+    print(f"Parameters: temperature={temperature}, top_p={top_p}, max_tokens={max_tokens}, frequency_penalty={frequency_penalty}, presence_penalty={presence_penalty}")
+
+    llm = ChatOpenAI(
+        model="gpt-4o-mini",
+        temperature=temperature,
+        top_p=top_p,
+        max_tokens=max_tokens,
+        frequency_penalty=frequency_penalty,
+        presence_penalty=presence_penalty
+    )
+    return llm
+
+
+
 def answer_query(query: str, index_obj, top_k: int = 100, use_memory: bool = False):
     if use_memory:
         # Combine previously stored document memory with fresh retrieval
@@ -95,7 +146,9 @@ def answer_query(query: str, index_obj, top_k: int = 100, use_memory: bool = Fal
         retrieved_chunks = retrieve_chunks(query, index_obj, top_k)
     
     prompt = prepare_prompt(query, retrieved_chunks)
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
+    # truncate the prompt, ensure it is within llm context limit
+    prompt = truncate_prompt(prompt, max_tokens=128000)
+    llm = call_llm()
     answer = llm.invoke(prompt)
     conversation_history.append(f"Query: {query}\nAnswer: {answer}")
     return answer
