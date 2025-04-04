@@ -61,6 +61,58 @@ def retrieve_chunks(query: str, index_obj, top_k: int = 100):
             
     return retrieved_chunks
 
+from transformers import GPT2TokenizerFast
+tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+
+def truncate_prompt(conversation_part: str, document_part: str, query: str, max_tokens: int = 128000) -> str:
+    """
+    Constructs a prompt from conversation history, document content, and query.
+    
+    If the conversation history plus query exceed max_tokens,
+    the conversation history will be dropped, preserving only the query.
+    
+    If the document part exceeds the allowed token count, the last part of the document is preserved.
+    """
+    # Construct the non-document part: conversation history + "Query: {query}\nAnswer:"
+    non_doc_text = conversation_part + f"Query: {query}\nAnswer:"
+    non_doc_tokens = tokenizer.encode(non_doc_text)
+    
+    # If non-document part exceeds max_tokens, drop conversation history and use only the query prompt.
+    query_only_text = f"Query: {query}\nAnswer:"
+    query_only_tokens = tokenizer.encode(query_only_text)
+    if len(non_doc_tokens) > max_tokens:
+        print("Warning: Conversation and query part exceed max tokens! Dropping conversation history.")
+        non_doc_text = query_only_text
+        non_doc_tokens = query_only_tokens
+
+    non_doc_count = len(non_doc_tokens)
+    
+    # Calculate the allowed tokens for the document part.
+    allowed_doc_tokens = max_tokens - non_doc_count
+
+    # Encode the document part tokens.
+    doc_tokens = tokenizer.encode(document_part)
+    doc_count = len(doc_tokens)
+    
+    if allowed_doc_tokens < 0:
+        # This should not happen, but if it does, return a truncated version of the non-document part.
+        print("Warning: Non-document part exceeds max tokens even after dropping conversation!")
+        truncated_non_doc = tokenizer.decode(non_doc_tokens[:max_tokens])
+        return truncated_non_doc
+    else:
+        if doc_count > allowed_doc_tokens:
+            # Instead of keeping the first tokens, keep the last allowed_doc_tokens tokens from the document.
+            truncated_doc_tokens = doc_tokens[-allowed_doc_tokens:]
+            truncated_doc = tokenizer.decode(truncated_doc_tokens)
+        else:
+            truncated_doc = document_part
+
+    # Combine the non-document part with the (possibly truncated) document part.
+    prompt = non_doc_text + "\n" + truncated_doc + "\n"
+    return prompt
+
+
+
 def prepare_prompt(query: str, retrieved_chunks: list):
     # Retrieve conversation history
     history_text = "\n".join(conversation_history[-10:])
@@ -84,18 +136,12 @@ def prepare_prompt(query: str, retrieved_chunks: list):
         f"{document_part}"
         f"Query: {query}\nAnswer:"
     )
+    truncate_prompt(conversation_part, document_part, query)
+
+    tokens = tokenizer.encode(prompt) 
+    
     return prompt
 
-
-from transformers import GPT2TokenizerFast
-tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
-
-def truncate_prompt(prompt, max_tokens=128000):
-    tokens = tokenizer.encode(prompt)
-    if len(tokens) > max_tokens:
-        print("Max tokens exceeded, truncate prompt to 128000")
-        tokens = tokens[:max_tokens]
-    return tokenizer.decode(tokens)
 
 
 import os 
@@ -134,7 +180,6 @@ def call_llm():
         presence_penalty=presence_penalty
     )
     return llm
-
 
 
 def answer_query(query: str, index_obj, top_k: int = 100, use_memory: bool = False):
