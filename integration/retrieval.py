@@ -101,6 +101,7 @@ def truncate_prompt(conversation_part: str, document_part: str, query: str, max_
         return truncated_non_doc
     else:
         if doc_count > allowed_doc_tokens:
+            print('Warning: Document part exceeds max token, document length: ', doc_count, ', allowed document tokens: ', allowed_doc_tokens, 'truncating document part')
             # Instead of keeping the first tokens, keep the last allowed_doc_tokens tokens from the document.
             truncated_doc_tokens = doc_tokens[-allowed_doc_tokens:]
             truncated_doc = tokenizer.decode(truncated_doc_tokens)
