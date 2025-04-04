@@ -83,6 +83,17 @@ def prepare_prompt(query: str, retrieved_chunks: list):
     )
     return prompt
 
+from transformers import GPT2TokenizerFast
+tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+
+def truncate_prompt(prompt, max_tokens=128000):
+    tokens = tokenizer.encode(prompt)
+    if len(tokens) > max_tokens:
+        print("Max tokens exceeded, truncate prompt to 128000")
+        tokens = tokens[:max_tokens]
+    return tokenizer.decode(tokens)
+
+
 def answer_query(query: str, index_obj, top_k: int = 100, use_memory: bool = False):
     if use_memory:
         # Combine previously stored document memory with fresh retrieval
@@ -92,6 +103,8 @@ def answer_query(query: str, index_obj, top_k: int = 100, use_memory: bool = Fal
         retrieved_chunks = retrieve_chunks(query, index_obj, top_k)
     
     prompt = prepare_prompt(query, retrieved_chunks)
+    # truncate the prompt, ensure it is within llm context limit
+    prompt = truncate_prompt(prompt, max_tokens=128000)
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
     answer = llm.invoke(prompt)
     conversation_history.append(f"Query: {query}\nAnswer: {answer}")
