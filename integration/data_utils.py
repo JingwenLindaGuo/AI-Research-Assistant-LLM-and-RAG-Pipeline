@@ -86,7 +86,7 @@ def verify_results(results, filters):
         # Add paper if it meets all criteria
         if all(match_results.values()):
             verified_results.append(result)
-            stored_paper_titles.add(paper_title) 
+            # stored_paper_titles.add(paper_title) # commented out for testing
 
     return verified_results
 
@@ -114,10 +114,7 @@ def chunk_papers(results):
 
                 # Tag each chunk with paper metadata and store content under "text"
                 for i, chunk in enumerate(paper_chunks):
-                    if isinstance(chunk, dict):
-                        content = chunk.get("page_content", "")
-                    else:
-                        content = getattr(chunk, "page_content", "")
+                    content = getattr(chunk, "page_content", "")
                     all_chunks.append({
                         "text": content,
                         "paper_title": result.title,
