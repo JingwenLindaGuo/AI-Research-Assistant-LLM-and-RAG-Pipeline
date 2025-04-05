@@ -229,7 +229,11 @@ def answer_query(classification, index_obj, top_k: int = 100, use_memory: bool =
     prompt = prepare_prompt(classification, retrieved_chunks) 
     llm = ChatOpenAI(
         model="gpt-4o-mini",
-        temperature = 0.7)
+        temperature = 0.2,
+        top_p = 1.0,
+        max_tokens = 1000,
+        frequency_penalty = 0.0,
+        presence_penalty = 0.0)
     answer = llm.invoke(prompt)
     conversation_history.append(f"Query: {query}\nAnswer: {answer}")
     return answer
