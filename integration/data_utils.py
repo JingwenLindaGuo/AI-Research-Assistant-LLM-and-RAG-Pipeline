@@ -115,12 +115,18 @@ def chunk_papers(results):
                 text_splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=100)
                 paper_chunks = text_splitter.create_documents([full_text])
 
+                paper_title = result.title
+                paper_author_list = [author.name for author in result.authors] 
+                paper_date = result.published.strftime("%Y%m%d%H%M")
+
                 # Tag each chunk with paper metadata and store content under "text"
                 for i, chunk in enumerate(paper_chunks):
                     content = getattr(chunk, "page_content", "")
                     all_chunks.append({
                         "text": content,
-                        "paper_title": result.title,
+                        "title":paper_title,
+                        "author": paper_author_list,
+                        "date": paper_date,
                         "chunk_index": i
                     })
 
