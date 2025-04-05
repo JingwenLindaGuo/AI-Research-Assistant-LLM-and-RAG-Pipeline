@@ -1,4 +1,5 @@
 import os
+from time import sleep
 os.environ["PINECONE_API_KEY"] = "pcsk_594Xgb_Qtwvagd2kRcdaJtLSdnXXrnn2RN81sRkGZyJYCqQmiEJY1iw6rDdNATRvSmfkCZ"
 print("Pinecone API Key:", os.getenv("PINECONE_API_KEY"))
 # from Search_or_Discuss import classify_and_extract
@@ -74,7 +75,12 @@ def handleUserQuery(user_input: str) -> dict:
         texts = [chunk["text"] for chunk in chunks]  # Extract just the text
 
         if texts:
-            save_embeddings_to_index(index_name, texts)  # Save the full paper text chunks to the index
+                        # Save the full paper text chunks to the index
+            batch_size = 200
+            for i in range(0, len(texts), batch_size):
+                text_batch = texts[i:i+batch_size] 
+                save_embeddings_to_index(index_name=index_name, text=text_batch)
+            sleep(1)
 
         
         return {
