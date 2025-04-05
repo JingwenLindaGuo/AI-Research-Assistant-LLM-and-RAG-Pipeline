@@ -45,20 +45,20 @@ def delete_index(index_name):
         print(f"Index '{index_name}' does not exist or was already deleted.")
 
 def save_embeddings_to_index(index_name, text, titles, authors, dates, sources, namespace="default"):
-
     # Retrieve the index instance
     index = pc.Index(index_name)
 
     # Convert text into a list of dicts with unique IDs
     data_with_ids = []
-    for text, title, source in zip(text, titles, sources):
+    # 注意：这里我们假设 text, titles, authors, dates, sources 都是列表
+    for t, ti, a, d, s in zip(text, titles, authors, dates, sources):
         data_with_ids.append({
             "id": str(uuid.uuid4()),  # generate a random UUID
-            "text": text,
-            "title": titles,
-            "author": authors,
-            "date": dates,
-            "source": sources
+            "text": t,
+            "title": ti,
+            "author": a,
+            "date": d,
+            "source": s
         })
 
     print('pinecone gonna store: ')
@@ -73,11 +73,13 @@ def save_embeddings_to_index(index_name, text, titles, authors, dates, sources, 
         vectors.append({
             "id": d['id'],
             "values": e['values'],
-            "metadata": {"text": d['text'],
-                         "title": d['title'],
-                         "author": d["author"], 
-                         "date": d["date"],
-                         "source": d['source']}
+            "metadata": {
+                "text": d['text'],
+                "title": d['title'],
+                "author": d["author"], 
+                "date": d["date"],
+                "source": d['source']
+            }
         })
     
     # Upsert embeddings into the index
@@ -86,4 +88,5 @@ def save_embeddings_to_index(index_name, text, titles, authors, dates, sources, 
         namespace=namespace
     )
     print(f"Upserted {len(vectors)} embeddings into index '{index_name}', namespace '{namespace}'.")
+
 

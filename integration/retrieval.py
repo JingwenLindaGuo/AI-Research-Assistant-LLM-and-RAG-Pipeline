@@ -22,54 +22,74 @@ def parse_date(date_str: str) -> int:
     """
     return int(date_str)
 
+
+def get_embedding_count(index_obj, namespace="default"):
+    """
+    Returns the number of embeddings stored in the given namespace of the Pinecone index.
+    
+    参数:
+    - index_obj: Pinecone Index object
+    - namespace: 指定的 namespace，默认为 "default"
+    
+    返回:
+    - int: 指定 namespace 中存储的 embedding 数量
+    """
+    stats = index_obj.describe_index_stats()
+    # 获取指定 namespace 的统计数据
+    namespace_stats = stats.get("namespaces", {}).get(namespace, {})
+    return namespace_stats.get("vector_count", 0)
+
+
 def retrieve_chunks(classification, index_obj, top_k: int = 100):
     tries = 0
     query = classification['question']
     query_response = embed([{"text": query}])
     query_embedding = query_response[0]["values"]
 
-    filter_condition = {}
+    # filter_condition = {}
 
-    # 2.1 如果paper_author_list不是null，添加精确匹配
-    author_filter = classification["filters"].get("paper_author_list")
-    if author_filter and author_filter != "null":
-        # 假设metadata中存储的key是"author"，且存储形式为列表
-        # 如果传入的author_filter是列表，则使用$in操作符进行匹配
-        if isinstance(author_filter, list):
-            filter_condition["author"] = {"$in": author_filter}
-        else:
-            filter_condition["author"] = author_filter
+    # # 2.1 如果paper_author_list不是null，添加精确匹配
+    # author_filter = classification["filters"].get("paper_author_list")
+    # if author_filter and author_filter != "null":
+    #     # 假设metadata中存储的key是"author"，且存储形式为列表
+    #     # 如果传入的author_filter是列表，则使用$in操作符进行匹配
+    #     if isinstance(author_filter, list):
+    #         filter_condition["author"] = {"$in": author_filter}
+    #     else:
+    #         filter_condition["author"] = author_filter
 
-    # 2.2 如果paper_title不是null，添加精确匹配
-    title_filter = classification["filters"].get("paper_title")
-    if title_filter and title_filter.lower() != "null":
-        # 假设metadata中存储的key是"title"
-        filter_condition["title"] = title_filter
+    # # 2.2 如果paper_title不是null，添加精确匹配
+    # title_filter = classification["filters"].get("paper_title")
+    # if title_filter and title_filter.lower() != "null":
+    #     # 假设metadata中存储的key是"title"
+    #     filter_condition["title"] = title_filter
 
-    # 2.3 如果start_date和end_date不是null，则进行日期区间过滤
-    start_date = classification["filters"].get("start_date")
-    end_date = classification["filters"].get("end_date")
+    # # 2.3 如果start_date和end_date不是null，则进行日期区间过滤
+    # start_date = classification["filters"].get("start_date")
+    # end_date = classification["filters"].get("end_date")
 
-    # 确保metadata中存储的"date"是通过paper_date = result.published.strftime("%Y%m%d%H%M")转换成的数值格式
-    date_filter = {}
-    if start_date and start_date.lower() != "null":
-        date_filter["$gte"] = parse_date(start_date)
-    if end_date and end_date.lower() != "null":
-        date_filter["$lte"] = parse_date(end_date)
+    # # 确保metadata中存储的"date"是通过paper_date = result.published.strftime("%Y%m%d%H%M")转换成的数值格式
+    # date_filter = {}
+    # if start_date and start_date.lower() != "null":
+    #     date_filter["$gte"] = parse_date(start_date)
+    # if end_date and end_date.lower() != "null":
+    #     date_filter["$lte"] = parse_date(end_date)
 
-    if date_filter:
-        # 假设metadata中存储的key是"date"
-        filter_condition["date"] = date_filter
+    # if date_filter:
+    #     # 假设metadata中存储的key是"date"
+    #     filter_condition["date"] = date_filter
 
 
     results = index_obj.query(
         vector=query_embedding,
         top_k=top_k,
         include_metadata=True,
-        namespace="default",
-        filter=filter_condition if filter_condition else None
+        namespace="default"
+        # filter=filter_condition if filter_condition else None
     )
 
+    print("Number of embeddings in pinecone now: ", get_embedding_count(index_obj))
+    
     retrieved_chunks = []
     if "matches" in results and results["matches"]:
         for match in results["matches"]:
@@ -83,9 +103,12 @@ def retrieve_chunks(classification, index_obj, top_k: int = 100):
             }
             retrieved_chunks.append(chunk)
             document_memory.append(chunk)
+
+    
     else:
         print("⚠️ No relevant documents found in Pinecone, wait for 5 seconds and trying again...") 
         sleep(5)
+        
         if tries == 0:
             tries +=1
             results = index_obj.query(
@@ -110,9 +133,11 @@ def retrieve_chunks(classification, index_obj, top_k: int = 100):
                 retrieved_chunks.append(chunk)
                 document_memory.append(chunk)
                 print("After retrying, relevant documents are found")
-            else:
-                print("⚠️ Still! No relevant documents found in Pinecone.") 
-            
+        else:
+            print("⚠️ Still! No relevant documents found in Pinecone.") 
+
+    print("Retrieved chunks: ")  
+    print(retrieve_chunks)
     return retrieved_chunks
 
 from transformers import GPT2TokenizerFast
@@ -178,16 +203,18 @@ def prepare_prompt(classification, retrieved_chunks: list):
         f"Paper Title: {chunk.get('title', 'Unknown title')}\n"
         f"Author: {chunk.get('author', 'Unknown author')}\n"
         f"Date: {chunk.get('date', 'Unknown date')}\n"
-        f"Text: {chunk.get('text', 'No text available')}"
+        f"Text Chunk: {chunk.get('text', 'No text available')}"
         for chunk in retrieved_chunks
     ])
-    document_part = f"Relevant paper chunks:\n{memory_text}\n\n" if memory_text else ""
+    document_part = f"Documents Provided:\n{memory_text}\n\n" if memory_text else ""
     
     prompt = (
         f"{conversation_part}"
         f"{document_part}"
         f"Query: {query}\nAnswer:"
     )
+    print("\nPrompt passed to LLM:")
+    print(prompt)
     truncate_prompt(conversation_part, document_part, query)
 
     tokens = tokenizer.encode(prompt) 
