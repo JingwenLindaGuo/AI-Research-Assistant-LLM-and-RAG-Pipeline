@@ -68,7 +68,7 @@ def save_embeddings_to_index(index_name, text, titles, namespace="default"):
             "id": d['id'],
             "values": e['values'],
             "metadata": {"text": d['text'],
-                         "title": d['title']}
+                         "title": d['paper_title']}
         })
     
     # Upsert embeddings into the index
