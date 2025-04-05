@@ -6,34 +6,36 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 def format_query(filters):
     """ Builds an ArXiv API query string from filter dictionary. """
-
-    search_parts = [filters.get('query')]  # Base query
+    if filters.get('query'):
+        search_parts = [filters.get('query')]  # Base query
+    else:
+        print("Query not detected")
+        return 0
+    
     if filters.get('author'):
-        search_parts.append(f'au:"{filters["author"]}"')  
+        search_parts.append(f'au:"{filters["author"]}"')
     if filters.get('title'):
-        search_parts.append(f'ti:"{filters["title"]}"')  
+        search_parts.append(f'ti:"{filters["title"]}"')
     if filters.get('category'):
-        search_parts.append(f'cat:"{filters["category"]}"')  
+        search_parts.append(f'cat:"{filters["category"]}"')
     if filters.get('abstract'):
-        search_parts.append(f'abs:"{filters["abstract"]}"')  
+        search_parts.append(f'abs:"{filters["abstract"]}"')
     if filters.get('journal_ref'):
-        search_parts.append(f'jr:"{filters["journal_ref"]}"')  
+        search_parts.append(f'jr:"{filters["journal_ref"]}"')
     if filters.get('doi'):
-        search_parts.append(f'doi:"{filters["doi"]}"')  
+        search_parts.append(f'doi:"{filters["doi"]}"')
     if filters.get('exclude_words'):
-        search_parts.append(f'NOT "{filters["exclude_words"]}"')  
+        search_parts.append(f'NOT "{filters["exclude_words"]}"')
     if filters.get('start_date') or filters.get('end_date'):
         start = filters.get('start_date', "*")  # Default to "*"
         end = filters.get('end_date', "999999999999")  # Default to max value
         search_parts.append(f'submittedDate:[{start} TO {end}]')
 
     query_str = " AND ".join(search_parts)  # Combine with AND
-
     return query_str
 
 def fetch_papers(filters):
     """ Fetches academic papers from ArXiv based on filters. """
-    
     search_query = format_query(filters)  # Build query
 
     # Create ArXiv search object
@@ -44,15 +46,23 @@ def fetch_papers(filters):
         sort_by=arxiv.SortCriterion.Relevance if filters.get('sort_by') == "relevance" else arxiv.SortCriterion.SubmittedDate
     )
 
-    results = list(client.results(search))  
+    results = list(client.results(search))
     return results
+
+stored_paper_titles = set()
 
 def verify_results(results, filters):
     """ Verifies if fetched papers match the filters and prints details. """
-    
     verified_results = []  # Store matching papers
 
     for result in results:
+        paper_title = result.title
+
+        # If paper has been retrieved before, skip the paper
+        if paper_title in stored_paper_titles:
+            print(f"Skipping '{paper_title}' — Already stored.")
+            continue    
+
         paper_title = result.title
         paper_author_list = [author.name for author in result.authors]
         paper_abstract = result.summary
@@ -76,32 +86,47 @@ def verify_results(results, filters):
         # Add paper if it meets all criteria
         if all(match_results.values()):
             verified_results.append(result)
+            stored_paper_titles.add(paper_title)
+            print('added ',paper_title,' to prevent searching it next time')
 
     return verified_results
 
+
 def chunk_papers(results):
-    """ Downloads, extracts, and chunks text from ArXiv PDFs. """
-    
+    """ Downloads, extracts, and chunks text from ArXiv PDFs, skipping papers without PDFs. """
     all_chunks = []
 
     for result in results:
+        if not result.pdf_url:
+            print(f"Skipping '{result.title}' — No PDF available.")
+            continue
 
         with tempfile.NamedTemporaryFile(delete=True, suffix=".pdf") as temp_pdf:
             try:
+                temp_pdf.close()
                 result.download_pdf(filename=temp_pdf.name)
-
                 loader = PyPDFLoader(temp_pdf.name)
                 papers = loader.load()
-
+                # Combine the text from all pages
                 full_text = " ".join(p.page_content for p in papers)
-
-                text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+                # Use smaller chunks with more overlap for capturing details
+                text_splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=100)
                 paper_chunks = text_splitter.create_documents([full_text])
 
-                all_chunks.extend(paper_chunks)
+                # Tag each chunk with paper metadata and store content under "text"
+                for i, chunk in enumerate(paper_chunks):
+                    content = getattr(chunk, "page_content", "")
+                    all_chunks.append({
+                        "text": content,
+                        "paper_title": result.title,
+                        "chunk_index": i
+                    })
 
-            except (FileNotFoundError, ConnectionResetError) as e:
-                print(f"Error: {e}")
+                print(f"Extracted {len(paper_chunks)} chunks from '{result.title}'")
+
+            except Exception as e:
+                print(f"Error processing '{result.title}': {e}")
                 time.sleep(5)
 
+    print(f"\nTotal Chunks Extracted: {len(all_chunks)}\n")
     return all_chunks
