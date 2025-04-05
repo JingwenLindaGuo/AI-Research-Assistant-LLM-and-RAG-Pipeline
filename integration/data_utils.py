@@ -140,4 +140,5 @@ def chunk_papers(results):
     return all_chunks
 
 def clear():
-    stored_paper_titles = set()
+    global stored_paper_titles
+    stored_paper_titles.clear()
