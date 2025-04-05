@@ -119,6 +119,7 @@ def chunk_papers(results):
                     all_chunks.append({
                         "text": content,
                         "paper_title": result.title,
+                        "source": "arxiv",
                         "chunk_index": i
                     })
 
