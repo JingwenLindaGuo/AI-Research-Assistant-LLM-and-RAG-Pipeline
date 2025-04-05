@@ -117,7 +117,7 @@ def chunk_papers(results):
 
                 paper_title = result.title
                 paper_author_list = [author.name for author in result.authors] 
-                paper_date = result.published.strftime("%Y%m%d%H%M")
+                paper_date = result.published.strftime("%Y%m%d")
 
                 # Tag each chunk with paper metadata and store content under "text"
                 for i, chunk in enumerate(paper_chunks):

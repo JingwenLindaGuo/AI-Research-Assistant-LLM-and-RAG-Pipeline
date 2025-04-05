@@ -51,13 +51,13 @@ def retrieve_chunks(classification, index_obj, top_k: int = 100):
     author_filter = classification["filters"].get("author")
     if author_filter is not None and str(author_filter).lower() != "null":
         # 假设 metadata 中的 key 为 "author"，做精确匹配（Exact Match）
-        filter_condition["author"] = author_filter
+        filter_condition["author"] = author_filter.lower()
 
     # 处理 title 过滤
     title_filter = classification["filters"].get("title")
     if title_filter is not None and str(title_filter).lower() != "null":
         # 假设 metadata 中的 key 为 "title"
-        filter_condition["title"] = title_filter
+        filter_condition["title"] = title_filter.lower()
 
     # 处理日期过滤：利用 start_date 和 end_date 做区间查询（Range Query）
     start_date = classification["filters"].get("start_date")
@@ -72,7 +72,9 @@ def retrieve_chunks(classification, index_obj, top_k: int = 100):
         filter_condition["date"] = date_filter
 
     # 如果需要额外添加其他过滤条件（例如 category、abstract 等），可以在这里扩展
-
+ 
+    print('Filter condition: ')
+    print(filter_condition)
     # 调用 Pinecone 的 query，使用构造好的 filter_condition
     results = index_obj.query(
         vector=query_embedding,

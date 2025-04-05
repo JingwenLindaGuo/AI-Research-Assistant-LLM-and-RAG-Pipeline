@@ -56,15 +56,15 @@ def save_embeddings_to_index(index_name, text, titles, authors, dates, sources, 
         data_with_ids.append({
             "id": str(uuid.uuid4()),  # generate a random UUID
             "text": t,
-            "title": ti,
-            "author": a,
+            "title": ti.lower(),
+            "author": a.lower(),
             "date": d,
             "source": s
         })
 
-    print('pinecone gonna store: ')
-    for i in data_with_ids:
-        print(i)
+    # print('pinecone gonna store: ')
+    # for i in data_with_ids:
+    #     print(i)
     # Embed the data
     embeddings = embed(data_with_ids)
 
