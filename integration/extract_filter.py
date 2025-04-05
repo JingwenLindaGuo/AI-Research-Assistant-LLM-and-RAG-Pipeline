@@ -37,7 +37,7 @@ For "search" actions:
     "max_results": "<Maximum results or 1>",
     "sort_by": "<'relevance' or 'newest'>"
   },
-  "question": "summarise the paper(s) retrieved"
+  "question": "summarise <Main search topic>"
 }
 
 For "other" actions:
