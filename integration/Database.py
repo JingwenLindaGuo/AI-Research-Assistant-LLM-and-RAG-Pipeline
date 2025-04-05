@@ -44,6 +44,10 @@ def delete_index(index_name):
     except Exception as e: # if the index does not exist catch the error
         print(f"Index '{index_name}' does not exist or was already deleted.")
 
+
+def to_int(s: str) -> int:
+    return int(s)
+
 def save_embeddings_to_index(index_name, text, titles, authors, dates, sources, namespace="default"):
     # Retrieve the index instance
     index = pc.Index(index_name)
@@ -57,14 +61,14 @@ def save_embeddings_to_index(index_name, text, titles, authors, dates, sources, 
             "id": str(uuid.uuid4()),  # generate a random UUID
             "text": t,
             "title": ti.lower(),
-            "author": a.lower(),
-            "date": d,
+            "author": a,
+            "date": to_int(d),
             "source": s
         })
 
-    # print('pinecone gonna store: ')
-    # for i in data_with_ids:
-    #     print(i)
+    print('pinecone gonna store: ')
+    for i in data_with_ids[:5]:
+        print(i)
     # Embed the data
     embeddings = embed(data_with_ids)
 

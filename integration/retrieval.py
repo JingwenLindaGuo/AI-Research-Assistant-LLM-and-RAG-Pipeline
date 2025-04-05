@@ -50,8 +50,9 @@ def retrieve_chunks(classification, index_obj, top_k: int = 100):
     # 处理 author 过滤
     author_filter = classification["filters"].get("author")
     if author_filter is not None and str(author_filter).lower() != "null":
-        # 假设 metadata 中的 key 为 "author"，做精确匹配（Exact Match）
-        filter_condition["author"] = author_filter.lower()
+        # 使用 $in 操作符检查目标作者是否在存储的 list 中
+        filter_condition["author"] = {"$in": [author_filter.lower()]}
+
 
     # 处理 title 过滤
     title_filter = classification["filters"].get("title")
