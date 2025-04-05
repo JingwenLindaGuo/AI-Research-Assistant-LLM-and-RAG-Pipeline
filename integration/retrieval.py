@@ -101,6 +101,7 @@ def truncate_prompt(conversation_part: str, document_part: str, query: str, max_
         return truncated_non_doc
     else:
         if doc_count > allowed_doc_tokens:
+            print('Warning: Document part exceeds max token, document length: ', doc_count, ', allowed document tokens: ', allowed_doc_tokens, 'truncating document part')
             # Instead of keeping the first tokens, keep the last allowed_doc_tokens tokens from the document.
             truncated_doc_tokens = doc_tokens[-allowed_doc_tokens:]
             truncated_doc = tokenizer.decode(truncated_doc_tokens)
@@ -191,8 +192,6 @@ def answer_query(query: str, index_obj, top_k: int = 100, use_memory: bool = Fal
         retrieved_chunks = retrieve_chunks(query, index_obj, top_k)
     
     prompt = prepare_prompt(query, retrieved_chunks)
-    # truncate the prompt, ensure it is within llm context limit
-    prompt = truncate_prompt(prompt, max_tokens=128000)
     llm = call_llm()
     answer = llm.invoke(prompt)
     conversation_history.append(f"Query: {query}\nAnswer: {answer}")
