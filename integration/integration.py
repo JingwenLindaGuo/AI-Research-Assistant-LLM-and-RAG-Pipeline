@@ -1,8 +1,9 @@
 import os
+from time import sleep
 os.environ["PINECONE_API_KEY"] = "pcsk_594Xgb_Qtwvagd2kRcdaJtLSdnXXrnn2RN81sRkGZyJYCqQmiEJY1iw6rDdNATRvSmfkCZ"
 print("Pinecone API Key:", os.getenv("PINECONE_API_KEY"))
 # from Search_or_Discuss import classify_and_extract
-from integration.Search_or_Discuss import classify_and_extract
+from integration.extract_filter import classify_and_extract
 from integration.data_utils import fetch_papers, verify_results, chunk_papers
 from integration.Database import create_index, save_embeddings_to_index, delete_index
 from integration.retrieval import answer_query, clear_memory
@@ -79,7 +80,7 @@ def handleUserQuery(user_input: str) -> dict:
             batch_size = 200
             for i in range(0, len(texts), batch_size):
                 text_batch = texts[i:i+batch_size] 
-                save_embeddings_to_index(index_name=user_index, text=text_batch)
+                save_embeddings_to_index(index_name=index_name, text=text_batch)
             sleep(1)
 
         #TODO: answer search question
