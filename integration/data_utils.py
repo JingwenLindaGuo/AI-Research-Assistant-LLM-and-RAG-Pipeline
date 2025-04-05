@@ -38,6 +38,8 @@ def fetch_papers(filters):
     """ Fetches academic papers from ArXiv based on filters. """
     search_query = format_query(filters)  # Build query
 
+    print('search query: ', search_query)
+
     # Create ArXiv search object
     client = arxiv.Client()
     search = arxiv.Search(
@@ -119,7 +121,6 @@ def chunk_papers(results):
                     all_chunks.append({
                         "text": content,
                         "paper_title": result.title,
-                        "source": "arxiv",
                         "chunk_index": i
                     })
 
@@ -131,3 +132,6 @@ def chunk_papers(results):
 
     print(f"\nTotal Chunks Extracted: {len(all_chunks)}\n")
     return all_chunks
+
+def clear():
+    stored_paper_titles = set()

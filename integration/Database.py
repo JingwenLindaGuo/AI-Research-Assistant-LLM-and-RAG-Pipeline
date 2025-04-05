@@ -44,14 +44,14 @@ def delete_index(index_name):
     except Exception as e: # if the index does not exist catch the error
         print(f"Index '{index_name}' does not exist or was already deleted.")
 
-def save_embeddings_to_index(index_name, text, titles,sources, namespace="default"):
+def save_embeddings_to_index(index_name, text, titles, sources, namespace="default"):
 
     # Retrieve the index instance
     index = pc.Index(index_name)
 
     # Convert text into a list of dicts with unique IDs
     data_with_ids = []
-    for text, title, source in text, titles, sources:
+    for text, title, source in zip(text, titles, sources):
         data_with_ids.append({
             "id": str(uuid.uuid4()),  # generate a random UUID
             "text": text,
