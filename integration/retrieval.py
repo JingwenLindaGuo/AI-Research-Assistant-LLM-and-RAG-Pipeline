@@ -168,24 +168,20 @@ def truncate_prompt(conversation_part: str, document_part: str, query: str, max_
 
 
 
-def prepare_prompt(query: str, retrieved_chunks: list):
+def prepare_prompt(classification, retrieved_chunks: list):
     # Retrieve conversation history
     history_text = "\n".join(conversation_history[-10:])
     conversation_part = f"Conversation history:\n{history_text}\n\n" if history_text else ""
-    
-    # Optionally filter by paper title if mentioned in the query
-    # paper_title = None
-    # # if "typiclust" in query.lower():
-    # #     paper_title = "TypiClust"  # or extract a more precise title if needed
+    query = classification['question']
 
-    # if paper_title:
-    #     filtered_chunks = [chunk for chunk in document_memory if paper_title.lower() in chunk.get("paper_title", "").lower()]
-    # else:
-    
-    filtered_chunks = document_memory
-
-    memory_text = "\n\n".join([chunk["text"] for chunk in filtered_chunks])
-    document_part = f"Relevant documents:\n{memory_text}\n\n" if memory_text else ""
+    memory_text = "\n\n".join([
+        f"Paper Title: {chunk.get('title', 'Unknown title')}\n"
+        f"Author: {chunk.get('author', 'Unknown author')}\n"
+        f"Date: {chunk.get('date', 'Unknown date')}\n"
+        f"Text: {chunk.get('text', 'No text available')}"
+        for chunk in retrieved_chunks
+    ])
+    document_part = f"Relevant paper chunks:\n{memory_text}\n\n" if memory_text else ""
     
     prompt = (
         f"{conversation_part}"
@@ -207,7 +203,7 @@ def answer_query(classification, index_obj, top_k: int = 100, use_memory: bool =
     # else:
     retrieved_chunks = retrieve_chunks(classification, index_obj, top_k)
     
-    prompt = prepare_prompt(query, retrieved_chunks) 
+    prompt = prepare_prompt(classification, retrieved_chunks) 
     llm = ChatOpenAI(
         model="gpt-4o-mini",
         temperature = 0.7)

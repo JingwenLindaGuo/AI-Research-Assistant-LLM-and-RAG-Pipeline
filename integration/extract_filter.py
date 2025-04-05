@@ -37,7 +37,7 @@ For "search" actions:
     "max_results": "<Maximum results or 1>",
     "sort_by": "<'relevance' or 'newest'>"
   },
-  "question": "summarise <Main search topic>"
+  "question": "What is paper title, author and date? Summarise <Main search topic> from the paper"
 }
 
 For "other" actions:
