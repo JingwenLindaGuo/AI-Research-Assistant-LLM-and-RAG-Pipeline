@@ -7,7 +7,9 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 def format_query(filters):
     """ Builds an ArXiv API query string from filter dictionary. """
 
-    search_parts = [filters.get('query')]  # Base query
+    search_parts = []
+    if filters.get('query'):
+        search_parts.append(filters.get('query'))
     if filters.get('author'):
         search_parts.append(f'au:"{filters["author"]}"')  
     if filters.get('title'):
@@ -40,7 +42,7 @@ def fetch_papers(filters):
     client = arxiv.Client()
     search = arxiv.Search(
         query=search_query,
-        max_results=int(filters.get('max_results')),
+        max_results=int(filters.get('max_results', 1)),
         sort_by=arxiv.SortCriterion.Relevance if filters.get('sort_by') == "relevance" else arxiv.SortCriterion.SubmittedDate
     )
 
