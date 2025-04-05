@@ -16,22 +16,70 @@ pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 conversation_history = []  # Stores the last few queries and responses
 document_memory = []  # Stores relevant document chunks for future context
 
-def retrieve_chunks(query: str, index_obj, top_k: int = 100):
+def parse_date(date_str: str) -> int:
+    """
+    turn YYYYMMDD or YYYYMMDDHHmm string into integer 
+    """
+    return int(date_str)
+
+def retrieve_chunks(classification, index_obj, top_k: int = 100):
     tries = 0
+    query = classification['question']
     query_response = embed([{"text": query}])
     query_embedding = query_response[0]["values"]
+
+    filter_condition = {}
+
+    # 2.1 如果paper_author_list不是null，添加精确匹配
+    author_filter = classification["filters"].get("paper_author_list")
+    if author_filter and author_filter != "null":
+        # 假设metadata中存储的key是"author"，且存储形式为列表
+        # 如果传入的author_filter是列表，则使用$in操作符进行匹配
+        if isinstance(author_filter, list):
+            filter_condition["author"] = {"$in": author_filter}
+        else:
+            filter_condition["author"] = author_filter
+
+    # 2.2 如果paper_title不是null，添加精确匹配
+    title_filter = classification["filters"].get("paper_title")
+    if title_filter and title_filter.lower() != "null":
+        # 假设metadata中存储的key是"title"
+        filter_condition["title"] = title_filter
+
+    # 2.3 如果start_date和end_date不是null，则进行日期区间过滤
+    start_date = classification["filters"].get("start_date")
+    end_date = classification["filters"].get("end_date")
+
+    # 确保metadata中存储的"date"是通过paper_date = result.published.strftime("%Y%m%d%H%M")转换成的数值格式
+    date_filter = {}
+    if start_date and start_date.lower() != "null":
+        date_filter["$gte"] = parse_date(start_date)
+    if end_date and end_date.lower() != "null":
+        date_filter["$lte"] = parse_date(end_date)
+
+    if date_filter:
+        # 假设metadata中存储的key是"date"
+        filter_condition["date"] = date_filter
+
+
     results = index_obj.query(
         vector=query_embedding,
         top_k=top_k,
         include_metadata=True,
-        namespace="default"
-    ) 
+        namespace="default",
+        filter=filter_condition if filter_condition else None
+    )
+
     retrieved_chunks = []
     if "matches" in results and results["matches"]:
         for match in results["matches"]:
+            metadata = match["metadata"]
             chunk = {
-                "text": match["metadata"].get("text", "No text available"),
-                "source": match["metadata"].get("source", "Unknown source")
+                "text": metadata.get("text", "No text available"),
+                "title": metadata.get("title", "Unknown title"),
+                "author": metadata.get("author", "Unknown author"),
+                "date": metadata.get("date", "Unknown date"),
+                "source": metadata.get("source", "Unknown source")
             }
             retrieved_chunks.append(chunk)
             document_memory.append(chunk)
@@ -44,15 +92,21 @@ def retrieve_chunks(query: str, index_obj, top_k: int = 100):
             vector=query_embedding,
             top_k=top_k,
             include_metadata=True,
-            namespace="default"
-            ) 
-            retrieved_chunks = []
-            if "matches" in results and results["matches"]:
-                for match in results["matches"]:
-                    chunk = {
-                        "text": match["metadata"].get("text", "No text available"),
-                        "source": match["metadata"].get("source", "Unknown source")
-                    }
+            namespace="default",
+            filter=filter_condition if filter_condition else None
+        )
+
+        retrieved_chunks = []
+        if "matches" in results and results["matches"]:
+            for match in results["matches"]:
+                metadata = match["metadata"]
+                chunk = {
+                    "text": metadata.get("text", "No text available"),
+                    "title": metadata.get("title", "Unknown title"),
+                    "author": metadata.get("author", "Unknown author"),
+                    "date": metadata.get("date", "Unknown date"),
+                    "source": metadata.get("source", "Unknown source")
+                }
                 retrieved_chunks.append(chunk)
                 document_memory.append(chunk)
                 print("After retrying, relevant documents are found")
@@ -144,13 +198,14 @@ def prepare_prompt(query: str, retrieved_chunks: list):
     
     return prompt
 
-def answer_query(query: str, index_obj, top_k: int = 100, use_memory: bool = False):
-    if use_memory:
-        # Combine previously stored document memory with fresh retrieval
-        new_retrieval = retrieve_chunks(query, index_obj, top_k)
-        retrieved_chunks = document_memory + new_retrieval
-    else:
-        retrieved_chunks = retrieve_chunks(query, index_obj, top_k)
+def answer_query(classification, index_obj, top_k: int = 100, use_memory: bool = False):
+    query = classification["question"]
+    # if use_memory:
+    #     # Combine previously stored document memory with fresh retrieval
+    #     new_retrieval = retrieve_chunks(query, index_obj, top_k)
+    #     retrieved_chunks = document_memory + new_retrieval
+    # else:
+    retrieved_chunks = retrieve_chunks(classification, index_obj, top_k)
     
     prompt = prepare_prompt(query, retrieved_chunks) 
     llm = ChatOpenAI(
