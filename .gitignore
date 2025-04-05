@@ -7,8 +7,8 @@ __pycache__/
 venv/
 .env
 __pycache__
-
-
+LLMvenv/
+.DS_Store
 
 # Ignore Gradio temporary files and logs
 .gradio/
@@ -22,5 +22,7 @@ __pycache__
 .env
 
 .gjwenv/
+.gjwenv
+gjwenv
+gjwenv/
 
-.gitignore

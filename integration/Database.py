@@ -44,21 +44,31 @@ def delete_index(index_name):
     except Exception as e: # if the index does not exist catch the error
         print(f"Index '{index_name}' does not exist or was already deleted.")
 
-def save_embeddings_to_index(index_name, text, titles,sources, namespace="default"):
 
+def to_int(s: str) -> int:
+    return int(s)
+
+def save_embeddings_to_index(index_name, text, titles, authors, dates, sources, namespace="default"):
     # Retrieve the index instance
     index = pc.Index(index_name)
 
     # Convert text into a list of dicts with unique IDs
     data_with_ids = []
-    for text, title, source in zip(text, titles, sources):
+
+    # 注意：这里我们假设 text, titles, authors, dates, sources 都是列表
+    for t, ti, a, d, s in zip(text, titles, authors, dates, sources):
         data_with_ids.append({
             "id": str(uuid.uuid4()),  # generate a random UUID
-            "text": text,
-            "title": title,
-            "source": source
+            "text": t,
+            "title": ti.lower(),
+            "author": a,
+            "date": to_int(d),
+            "source": s
         })
 
+    print('pinecone gonna store: ')
+    for i in data_with_ids[:5]:
+        print(i)
     # Embed the data
     embeddings = embed(data_with_ids)
 
@@ -68,9 +78,13 @@ def save_embeddings_to_index(index_name, text, titles,sources, namespace="defaul
         vectors.append({
             "id": d['id'],
             "values": e['values'],
-            "metadata": {"text": d['text'],
-                         "title": d['paper_title'],
-                         "source": d['source']}
+            "metadata": {
+                "text": d['text'],
+                "title": d['title'],
+                "author": d["author"], 
+                "date": d["date"],
+                "source": d['source']
+            }
         })
     
     # Upsert embeddings into the index
@@ -79,4 +93,5 @@ def save_embeddings_to_index(index_name, text, titles,sources, namespace="defaul
         namespace=namespace
     )
     print(f"Upserted {len(vectors)} embeddings into index '{index_name}', namespace '{namespace}'.")
+
 

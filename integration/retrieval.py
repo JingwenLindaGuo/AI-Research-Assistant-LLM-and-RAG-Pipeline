@@ -13,52 +13,127 @@ from time import sleep
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
 # Memory buffers to store past interactions and retrieved documents
-conversation_history = []  # Stores the last few queries and responses
-document_memory = []  # Stores relevant document chunks for future context
+conversation_history = []  # Stores the last few queries and responses 
 
-def retrieve_chunks(query: str, index_obj, top_k: int = 100):
+def parse_date(date_str: str) -> int:
+    """
+    turn YYYYMMDD or YYYYMMDDHHmm string into integer 
+    """
+    return int(date_str)
+
+
+def get_embedding_count(index_obj, namespace="default"):
+    """
+    Returns the number of embeddings stored in the given namespace of the Pinecone index.
+    
+    参数:
+    - index_obj: Pinecone Index object
+    - namespace: 指定的 namespace，默认为 "default"
+    
+    返回:
+    - int: 指定 namespace 中存储的 embedding 数量
+    """
+    stats = index_obj.describe_index_stats()
+    # 获取指定 namespace 的统计数据
+    namespace_stats = stats.get("namespaces", {}).get(namespace, {})
+    return namespace_stats.get("vector_count", 0)
+
+
+def retrieve_chunks(classification, index_obj, top_k: int = 100):
     tries = 0
+    query = classification['question']
     query_response = embed([{"text": query}])
     query_embedding = query_response[0]["values"]
+
+    filter_condition = {}
+
+    # 处理 author 过滤
+    author_filter = classification["filters"].get("author")
+    if author_filter is not None and str(author_filter).lower() != "null":
+        # 使用 $in 操作符检查目标作者是否在存储的 list 中
+        filter_condition["author"] = {"$in": [author_filter.lower()]}
+
+
+    # 处理 title 过滤
+    title_filter = classification["filters"].get("title")
+    if title_filter is not None and str(title_filter).lower() != "null":
+        # 假设 metadata 中的 key 为 "title"
+        filter_condition["title"] = title_filter.lower()
+
+    # 处理日期过滤：利用 start_date 和 end_date 做区间查询（Range Query）
+    start_date = classification["filters"].get("start_date")
+    end_date = classification["filters"].get("end_date")
+    date_filter = {}
+    if start_date is not None and str(start_date).lower() != "null":
+        date_filter["$gte"] = parse_date(start_date)
+    if end_date is not None and str(end_date).lower() != "null":
+        date_filter["$lte"] = parse_date(end_date)
+    if date_filter:
+        # 假设 metadata 中存储日期的 key 为 "date"
+        filter_condition["date"] = date_filter
+
+    # 如果需要额外添加其他过滤条件（例如 category、abstract 等），可以在这里扩展
+ 
+    print('Filter condition: ')
+    print(filter_condition)
+    # 调用 Pinecone 的 query，使用构造好的 filter_condition
     results = index_obj.query(
         vector=query_embedding,
         top_k=top_k,
         include_metadata=True,
-        namespace="default"
-    ) 
+        namespace="default",
+        filter=filter_condition if filter_condition else None
+    )
+
+
+    print("Number of embeddings in pinecone now: ", get_embedding_count(index_obj))
+    
     retrieved_chunks = []
     if "matches" in results and results["matches"]:
         for match in results["matches"]:
+            metadata = match["metadata"]
             chunk = {
-                "text": match["metadata"].get("text", "No text available"),
-                "source": match["metadata"].get("source", "Unknown source")
+                "text": metadata.get("text", "No text available"),
+                "title": metadata.get("title", "Unknown title"),
+                "author": metadata.get("author", "Unknown author"),
+                "date": metadata.get("date", "Unknown date"),
+                "source": metadata.get("source", "Unknown source")
             }
-            retrieved_chunks.append(chunk)
-            document_memory.append(chunk)
+            retrieved_chunks.append(chunk) 
+
+    
     else:
         print("⚠️ No relevant documents found in Pinecone, wait for 5 seconds and trying again...") 
         sleep(5)
+        
         if tries == 0:
             tries +=1
             results = index_obj.query(
             vector=query_embedding,
             top_k=top_k,
             include_metadata=True,
-            namespace="default"
-            ) 
-            retrieved_chunks = []
-            if "matches" in results and results["matches"]:
-                for match in results["matches"]:
-                    chunk = {
-                        "text": match["metadata"].get("text", "No text available"),
-                        "source": match["metadata"].get("source", "Unknown source")
-                    }
-                retrieved_chunks.append(chunk)
-                document_memory.append(chunk)
+            namespace="default",
+            filter=filter_condition if filter_condition else None
+        )
+
+        retrieved_chunks = []
+        if "matches" in results and results["matches"]:
+            for match in results["matches"]:
+                metadata = match["metadata"]
+                chunk = {
+                    "text": metadata.get("text", "No text available"),
+                    "title": metadata.get("title", "Unknown title"),
+                    "author": metadata.get("author", "Unknown author"),
+                    "date": metadata.get("date", "Unknown date"),
+                    "source": metadata.get("source", "Unknown source")
+                }
+                retrieved_chunks.append(chunk) 
                 print("After retrying, relevant documents are found")
-            else:
-                print("⚠️ Still! No relevant documents found in Pinecone.") 
-            
+        else:
+            print("⚠️ Still! No relevant documents found in Pinecone.") 
+
+    print("Retrieved chunks: ")  
+    print(retrieve_chunks)
     return retrieved_chunks
 
 from transformers import GPT2TokenizerFast
@@ -114,53 +189,55 @@ def truncate_prompt(conversation_part: str, document_part: str, query: str, max_
 
 
 
-def prepare_prompt(query: str, retrieved_chunks: list):
+def prepare_prompt(classification, retrieved_chunks: list):
     # Retrieve conversation history
     history_text = "\n".join(conversation_history[-10:])
     conversation_part = f"Conversation history:\n{history_text}\n\n" if history_text else ""
-    
-    # Optionally filter by paper title if mentioned in the query
-    # paper_title = None
-    # # if "typiclust" in query.lower():
-    # #     paper_title = "TypiClust"  # or extract a more precise title if needed
+    query = classification['question']
 
-    # if paper_title:
-    #     filtered_chunks = [chunk for chunk in document_memory if paper_title.lower() in chunk.get("paper_title", "").lower()]
-    # else:
-    
-    filtered_chunks = document_memory
-
-    memory_text = "\n\n".join([chunk["text"] for chunk in filtered_chunks])
-    document_part = f"Relevant documents:\n{memory_text}\n\n" if memory_text else ""
+    memory_text = "\n\n".join([
+        f"Paper Title: {chunk.get('title', 'Unknown title')}\n"
+        f"Author: {chunk.get('author', 'Unknown author')}\n"
+        f"Date: {chunk.get('date', 'Unknown date')}\n"
+        f"Text Chunk: {chunk.get('text', 'No text available')}"
+        for chunk in retrieved_chunks
+    ])
+    document_part = f"Documents Provided:\n{memory_text}\n\n" if memory_text else ""
     
     prompt = (
         f"{conversation_part}"
         f"{document_part}"
         f"Query: {query}\nAnswer:"
     )
+    print("\nPrompt passed to LLM:")
+    print(prompt)
     truncate_prompt(conversation_part, document_part, query)
 
     tokens = tokenizer.encode(prompt) 
     
     return prompt
 
-def answer_query(query: str, index_obj, top_k: int = 100, use_memory: bool = False):
-    if use_memory:
-        # Combine previously stored document memory with fresh retrieval
-        new_retrieval = retrieve_chunks(query, index_obj, top_k)
-        retrieved_chunks = document_memory + new_retrieval
-    else:
-        retrieved_chunks = retrieve_chunks(query, index_obj, top_k)
+def answer_query(classification, index_obj, top_k: int = 100, use_memory: bool = False):
+    query = classification["question"]
+    # if use_memory:
+    #     # Combine previously stored document memory with fresh retrieval
+    #     new_retrieval = retrieve_chunks(query, index_obj, top_k)
+    #     retrieved_chunks = document_memory + new_retrieval
+    # else:
+    retrieved_chunks = retrieve_chunks(classification, index_obj, top_k)
     
-    prompt = prepare_prompt(query, retrieved_chunks) 
+    prompt = prepare_prompt(classification, retrieved_chunks) 
     llm = ChatOpenAI(
         model="gpt-4o-mini",
-        temperature = 0.7)
+        temperature = 0.2,
+        top_p = 1.0,
+        max_tokens = 1000,
+        frequency_penalty = 0.0,
+        presence_penalty = 0.0)
     answer = llm.invoke(prompt)
     conversation_history.append(f"Query: {query}\nAnswer: {answer}")
     return answer
 
 def clear_memory():
-    conversation_history.clear()
-    document_memory.clear()
+    conversation_history.clear() 
     print("Memory cleared.")

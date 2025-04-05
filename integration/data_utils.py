@@ -38,6 +38,8 @@ def fetch_papers(filters):
     """ Fetches academic papers from ArXiv based on filters. """
     search_query = format_query(filters)  # Build query
 
+    print('search query: ', search_query)
+
     # Create ArXiv search object
     client = arxiv.Client()
     search = arxiv.Search(
@@ -113,13 +115,18 @@ def chunk_papers(results):
                 text_splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=100)
                 paper_chunks = text_splitter.create_documents([full_text])
 
+                paper_title = result.title
+                paper_author_list = [author.name for author in result.authors] 
+                paper_date = result.published.strftime("%Y%m%d")
+
                 # Tag each chunk with paper metadata and store content under "text"
                 for i, chunk in enumerate(paper_chunks):
                     content = getattr(chunk, "page_content", "")
                     all_chunks.append({
                         "text": content,
-                        "paper_title": result.title,
-                        "source": "arxiv",
+                        "title":paper_title,
+                        "author": paper_author_list,
+                        "date": paper_date,
                         "chunk_index": i
                     })
 
@@ -131,3 +138,7 @@ def chunk_papers(results):
 
     print(f"\nTotal Chunks Extracted: {len(all_chunks)}\n")
     return all_chunks
+
+def clear():
+    global stored_paper_titles
+    stored_paper_titles.clear()
