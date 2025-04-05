@@ -13,8 +13,7 @@ from time import sleep
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
 # Memory buffers to store past interactions and retrieved documents
-conversation_history = []  # Stores the last few queries and responses
-document_memory = []  # Stores relevant document chunks for future context
+conversation_history = []  # Stores the last few queries and responses 
 
 def parse_date(date_str: str) -> int:
     """
@@ -46,47 +45,43 @@ def retrieve_chunks(classification, index_obj, top_k: int = 100):
     query_response = embed([{"text": query}])
     query_embedding = query_response[0]["values"]
 
-    # filter_condition = {}
+    filter_condition = {}
 
-    # # 2.1 如果paper_author_list不是null，添加精确匹配
-    # author_filter = classification["filters"].get("paper_author_list")
-    # if author_filter and author_filter != "null":
-    #     # 假设metadata中存储的key是"author"，且存储形式为列表
-    #     # 如果传入的author_filter是列表，则使用$in操作符进行匹配
-    #     if isinstance(author_filter, list):
-    #         filter_condition["author"] = {"$in": author_filter}
-    #     else:
-    #         filter_condition["author"] = author_filter
+    # 处理 author 过滤
+    author_filter = classification["filters"].get("author")
+    if author_filter is not None and str(author_filter).lower() != "null":
+        # 假设 metadata 中的 key 为 "author"，做精确匹配（Exact Match）
+        filter_condition["author"] = author_filter
 
-    # # 2.2 如果paper_title不是null，添加精确匹配
-    # title_filter = classification["filters"].get("paper_title")
-    # if title_filter and title_filter.lower() != "null":
-    #     # 假设metadata中存储的key是"title"
-    #     filter_condition["title"] = title_filter
+    # 处理 title 过滤
+    title_filter = classification["filters"].get("title")
+    if title_filter is not None and str(title_filter).lower() != "null":
+        # 假设 metadata 中的 key 为 "title"
+        filter_condition["title"] = title_filter
 
-    # # 2.3 如果start_date和end_date不是null，则进行日期区间过滤
-    # start_date = classification["filters"].get("start_date")
-    # end_date = classification["filters"].get("end_date")
+    # 处理日期过滤：利用 start_date 和 end_date 做区间查询（Range Query）
+    start_date = classification["filters"].get("start_date")
+    end_date = classification["filters"].get("end_date")
+    date_filter = {}
+    if start_date is not None and str(start_date).lower() != "null":
+        date_filter["$gte"] = parse_date(start_date)
+    if end_date is not None and str(end_date).lower() != "null":
+        date_filter["$lte"] = parse_date(end_date)
+    if date_filter:
+        # 假设 metadata 中存储日期的 key 为 "date"
+        filter_condition["date"] = date_filter
 
-    # # 确保metadata中存储的"date"是通过paper_date = result.published.strftime("%Y%m%d%H%M")转换成的数值格式
-    # date_filter = {}
-    # if start_date and start_date.lower() != "null":
-    #     date_filter["$gte"] = parse_date(start_date)
-    # if end_date and end_date.lower() != "null":
-    #     date_filter["$lte"] = parse_date(end_date)
+    # 如果需要额外添加其他过滤条件（例如 category、abstract 等），可以在这里扩展
 
-    # if date_filter:
-    #     # 假设metadata中存储的key是"date"
-    #     filter_condition["date"] = date_filter
-
-
+    # 调用 Pinecone 的 query，使用构造好的 filter_condition
     results = index_obj.query(
         vector=query_embedding,
         top_k=top_k,
         include_metadata=True,
-        namespace="default"
-        # filter=filter_condition if filter_condition else None
+        namespace="default",
+        filter=filter_condition if filter_condition else None
     )
+
 
     print("Number of embeddings in pinecone now: ", get_embedding_count(index_obj))
     
@@ -101,8 +96,7 @@ def retrieve_chunks(classification, index_obj, top_k: int = 100):
                 "date": metadata.get("date", "Unknown date"),
                 "source": metadata.get("source", "Unknown source")
             }
-            retrieved_chunks.append(chunk)
-            document_memory.append(chunk)
+            retrieved_chunks.append(chunk) 
 
     
     else:
@@ -130,8 +124,7 @@ def retrieve_chunks(classification, index_obj, top_k: int = 100):
                     "date": metadata.get("date", "Unknown date"),
                     "source": metadata.get("source", "Unknown source")
                 }
-                retrieved_chunks.append(chunk)
-                document_memory.append(chunk)
+                retrieved_chunks.append(chunk) 
                 print("After retrying, relevant documents are found")
         else:
             print("⚠️ Still! No relevant documents found in Pinecone.") 
@@ -239,6 +232,5 @@ def answer_query(classification, index_obj, top_k: int = 100, use_memory: bool =
     return answer
 
 def clear_memory():
-    conversation_history.clear()
-    document_memory.clear()
+    conversation_history.clear() 
     print("Memory cleared.")

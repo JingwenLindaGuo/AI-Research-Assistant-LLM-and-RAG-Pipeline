@@ -50,12 +50,9 @@ def save_embeddings_to_index(index_name, text, titles, authors, dates, sources, 
 
     # Convert text into a list of dicts with unique IDs
     data_with_ids = []
-<<<<<<< HEAD
+
     # 注意：这里我们假设 text, titles, authors, dates, sources 都是列表
     for t, ti, a, d, s in zip(text, titles, authors, dates, sources):
-=======
-    for text, title, source in zip(text, titles, sources):
->>>>>>> 2d5ea10c6518538e920037da890c2d19e3420b02
         data_with_ids.append({
             "id": str(uuid.uuid4()),  # generate a random UUID
             "text": t,
