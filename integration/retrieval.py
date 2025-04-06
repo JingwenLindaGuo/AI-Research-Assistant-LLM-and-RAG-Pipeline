@@ -54,11 +54,11 @@ def retrieve_chunks(classification, index_obj, top_k: int = 100):
         filter_condition["author"] = {"$in": [author_filter.lower()]}
 
 
-    # 处理 title 过滤
-    title_filter = classification["filters"].get("title")
-    if title_filter is not None and str(title_filter).lower() != "null":
-        # 假设 metadata 中的 key 为 "title"
-        filter_condition["title"] = title_filter.lower()
+    # # 处理 title 过滤
+    # title_filter = classification["filters"].get("title")
+    # if title_filter is not None and str(title_filter).lower() != "null":
+    #     # 假设 metadata 中的 key 为 "title"
+    #     filter_condition["title"] = title_filter.lower()
 
     # 处理日期过滤：利用 start_date 和 end_date 做区间查询（Range Query）
     start_date = classification["filters"].get("start_date")
@@ -202,7 +202,7 @@ def prepare_prompt(classification, retrieved_chunks: list):
         f"Text Chunk: {chunk.get('text', 'No text available')}"
         for chunk in retrieved_chunks
     ])
-    document_part = f"Documents Provided:\n{memory_text}\n\n" if memory_text else "No Relevant documents found through the input query\n\n"
+    document_part = f"Documents Provided:\n{memory_text}\n\n" if memory_text else "No Relevant documents found, maybe user did not enter correct paper information\n\n"
     
     prompt = (
         f"{conversation_part}"

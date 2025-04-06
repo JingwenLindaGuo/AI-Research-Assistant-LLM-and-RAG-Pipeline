@@ -119,6 +119,9 @@ def chunk_papers(results):
                 paper_author_list = [author.name for author in result.authors] 
                 paper_date = result.published.strftime("%Y%m%d")
 
+                # merge each text chunk with its title and author
+                full_text = f"'{full_text}'\ntext from {paper_title}\nauthored by {', '.join(paper_author_list)}"
+
                 # Tag each chunk with paper metadata and store content under "text"
                 for i, chunk in enumerate(paper_chunks):
                     content = getattr(chunk, "page_content", "")

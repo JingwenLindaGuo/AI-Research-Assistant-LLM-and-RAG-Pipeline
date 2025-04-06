@@ -57,6 +57,10 @@ def save_embeddings_to_index(index_name, text, titles, authors, dates, sources, 
 
     # 注意：这里我们假设 text, titles, authors, dates, sources 都是列表
     for t, ti, a, d, s in zip(text, titles, authors, dates, sources):
+
+        # merge each text chunk with its title and author
+        t = f"'{t}'\ntext from {ti}\nauthored by {', '.join(a)}"
+
         data_with_ids.append({
             "id": str(uuid.uuid4()),  # generate a random UUID
             "text": t,
