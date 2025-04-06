@@ -74,7 +74,7 @@ def verify_results(results, filters):
         # Check filter matches
         match_results = {
             "Author Match": filters.get('author') is None or any(filters.get('author', '').lower() in a.lower() for a in paper_author_list),
-            "Title Match": filters.get('title') is None or filters.get('title', '').lower() in paper_title.lower(),
+            # "Title Match": filters.get('title') is None or filters.get('title', '').lower() in paper_title.lower(),  # to allow vague search for title
             "Category Match": filters.get('category') is None or filters.get('category') in paper_category,
             "Abstract Match": filters.get('abstract') is None or filters.get('abstract', '').lower() in paper_abstract.lower(),
             "Exclusion (NOT)": filters.get('exclude_words') is None or filters.get('exclude_words', '').lower() not in paper_title.lower(),
@@ -118,9 +118,6 @@ def chunk_papers(results):
                 paper_title = result.title
                 paper_author_list = [author.name for author in result.authors] 
                 paper_date = result.published.strftime("%Y%m%d")
-
-                # merge each text chunk with its title and author
-                full_text = f"'{full_text}'\ntext from {paper_title}\nauthored by {', '.join(paper_author_list)}"
 
                 # Tag each chunk with paper metadata and store content under "text"
                 for i, chunk in enumerate(paper_chunks):
