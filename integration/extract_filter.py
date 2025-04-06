@@ -60,6 +60,24 @@ For "other" actions:
   "question": "<The user's request for retrieved data>"
 }
 
+## INSTRUCTIONS (apply carefully for each field):
+
+- query: The *main topic* or subject the user is searching for. This should be broad (e.g., "deep learning").
+- author: If the user names a person, extract it exactly. Example: "by Ilya Sutskever" → "author": "Ilya Sutskever".
+- title: If specific words must be in the title (e.g. "with 'attention' in the title"), extract just those keywords.
+- category: Convert category names (e.g. "computation and language") to *arXiv subject codes* like "cs.CL".
+- abstract: If the user says a topic must be discussed in the abstract, include the keyword (e.g. "NLP").
+- journal_ref: If the user mentions a publication venue (e.g., NeurIPS, Nature), extract it exactly.
+- doi: If a DOI is mentioned (e.g., "10.1234/abcde"), include it exactly as given. Never guess.
+- exclude_words: For negations like “not about X”, “excluding Y”, or “not on Z”, extract just those keywords.
+- start_date / end_date: Convert any date-based constraints into YYYYMMDD format.
+    - "before 2020" → "end_date": "20191231"
+    - "after 2015" → "start_date": "20160101"
+    - "from 2015 to 2017" → "start_date": "20150101", "end_date": "20171231"
+- max_results: Extract numerical quantities from phrases like "3 papers", "at most 5", etc. Default to "1" if not specified.
+- sort_by: If the user requests "most recent" or "latest", set "sort_by": "newest". Otherwise, default to "relevance".
+
+
 Guidelines:
 - Clearly differentiate between requests that are pure search (with optional summary) and those that require further discussion or analysis.
 - If the user's request contains terms such as "discuss", "explain", or requests for detailed explanations of the paper's contents (e.g., specific algorithm details), classify it as "other".
