@@ -2,3 +2,6 @@ fastapi
 gradio
 pydantic
 uvicorn
+openai
+pypdf
+langchain_community
