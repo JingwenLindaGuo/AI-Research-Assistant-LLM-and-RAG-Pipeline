@@ -7,14 +7,22 @@ import random
 import string
 import uuid
 
-# Load environment variables
-load_dotenv()
+"""
+This script provides utility functions to:
+- Create and delete Pinecone vector indexes
+- Convert and embed text data using a custom embedder
+- Save embeddings along with metadata (title, author, date, source) to Pinecone
 
-# Create Pinecone client with API key
+"""
+
+load_dotenv()
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
+
 def create_index(dimension=1536, metric="cosine", cloud="aws", region="us-east-1"):
-    
+    """
+    this function created a vector index to access pinecone
+    """
     # Generate random name for an index
     str_characters = string.ascii_lowercase + string.digits
     index_name = ''.join(random.choice(str_characters) for _ in range(10))
@@ -38,6 +46,9 @@ def create_index(dimension=1536, metric="cosine", cloud="aws", region="us-east-1
     return index_name
 
 def delete_index(index_name):
+    """
+    this function deletes designated pinecone vector index, because the maximum limit for existing vector index is 5
+    """
     try:
         pc.delete_index(index_name)
         print(f"Index '{index_name}' deleted successfully!")
@@ -49,18 +60,20 @@ def to_int(s: str) -> int:
     return int(s)
 
 def save_embeddings_to_index(index_name, text, titles, authors, dates, sources, namespace="default"):
+    """
+    this function saves the data retrieved from retrieval.py into pinecone
+    """
     # Retrieve the index instance
     index = pc.Index(index_name)
 
     # Convert text into a list of dicts with unique IDs
     data_with_ids = []
 
-    # 注意：这里我们假设 text, titles, authors, dates, sources 都是列表
     for t, ti, a, d, s in zip(text, titles, authors, dates, sources):
-
         # merge each text chunk with its title and author
         t = f"'{t}'\ntext from {ti}\nauthored by {', '.join(a)}"
 
+        # format data retrieved to fit into pinecone
         data_with_ids.append({
             "id": str(uuid.uuid4()),  # generate a random UUID
             "text": t,
@@ -73,6 +86,7 @@ def save_embeddings_to_index(index_name, text, titles, authors, dates, sources, 
     print('pinecone gonna store: ')
     for i in data_with_ids[:5]:
         print(i)
+
     # Embed the data
     embeddings = embed(data_with_ids)
 
