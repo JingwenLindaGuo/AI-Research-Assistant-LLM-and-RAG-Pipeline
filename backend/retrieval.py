@@ -11,8 +11,7 @@ from time import sleep
 # Initialize the Pinecone client using the API key from environment variables
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
-# Memory buffers to store past interactions and retrieved documents
-conversation_history = []  # Stores the last few queries and responses 
+conversation_history = []  # Stores the last 10 queries and responses 
 
 def parse_date(date_str: str) -> int:
     """
@@ -21,45 +20,22 @@ def parse_date(date_str: str) -> int:
     return int(date_str)
 
 
-def get_embedding_count(index_obj, namespace="default"):
-    """
-    Returns the number of embeddings stored in the given namespace of the Pinecone index.
-    
-    参数:
-    - index_obj: Pinecone Index object
-    - namespace: 指定的 namespace，默认为 "default"
-    
-    返回:
-    - int: 指定 namespace 中存储的 embedding 数量
-    """
-    stats = index_obj.describe_index_stats()
-    # 获取指定 namespace 的统计数据
-    namespace_stats = stats.get("namespaces", {}).get(namespace, {})
-    return namespace_stats.get("vector_count", 0)
-
-
 def retrieve_chunks(classification, index_obj, top_k: int = 100):
     tries = 0
     query = classification['question']
     query_response = embed([{"text": query}])
     query_embedding = query_response[0]["values"]
 
+    # create metadata filter for pinecone retrieval
     filter_condition = {}
 
-    # 处理 author 过滤
+    # filter for author
     author_filter = classification["filters"].get("author")
     if author_filter is not None and str(author_filter).lower() != "null":
-        # 使用 $in 操作符检查目标作者是否在存储的 list 中
+        # check if the target author is in the list of authors
         filter_condition["author"] = {"$in": [author_filter.lower()]}
 
-
-    # # 处理 title 过滤
-    # title_filter = classification["filters"].get("title")
-    # if title_filter is not None and str(title_filter).lower() != "null":
-    #     # 假设 metadata 中的 key 为 "title"
-    #     filter_condition["title"] = title_filter.lower()
-
-    # 处理日期过滤：利用 start_date 和 end_date 做区间查询（Range Query）
+    # do range query for the date metadata using start_date and end_date 
     start_date = classification["filters"].get("start_date")
     end_date = classification["filters"].get("end_date")
     date_filter = {}
@@ -67,15 +43,12 @@ def retrieve_chunks(classification, index_obj, top_k: int = 100):
         date_filter["$gte"] = parse_date(start_date)
     if end_date is not None and str(end_date).lower() != "null":
         date_filter["$lte"] = parse_date(end_date)
-    if date_filter:
-        # 假设 metadata 中存储日期的 key 为 "date"
+    if date_filter: 
         filter_condition["date"] = date_filter
-
-    # 如果需要额外添加其他过滤条件（例如 category、abstract 等），可以在这里扩展
  
     print('Filter condition: ')
-    print(filter_condition)
-    # 调用 Pinecone 的 query，使用构造好的 filter_condition
+    print(filter_condition) 
+
     results = index_obj.query(
         vector=query_embedding,
         top_k=top_k,
@@ -83,10 +56,8 @@ def retrieve_chunks(classification, index_obj, top_k: int = 100):
         namespace="default",
         filter=filter_condition if filter_condition else None
     )
-
-
-    print("Number of embeddings in pinecone now: ", get_embedding_count(index_obj))
-    
+ 
+    # parse retrieved results into text chunks
     retrieved_chunks = []
     if "matches" in results and results["matches"]:
         for match in results["matches"]:
@@ -99,13 +70,14 @@ def retrieve_chunks(classification, index_obj, top_k: int = 100):
                 "source": metadata.get("source", "Unknown source")
             }
             retrieved_chunks.append(chunk) 
-
-    
+            
     else:
+        # Pinecone may have a cold start delay. If no data is returned, wait 5 seconds and retry.
         print("⚠️ No relevant documents found in Pinecone, wait for 5 seconds and trying again...") 
         sleep(5)
         
         if tries == 0:
+            # Ensure only one retry to avoid infinite loop on cold start
             tries +=1
             results = index_obj.query(
             vector=query_embedding,
@@ -132,7 +104,7 @@ def retrieve_chunks(classification, index_obj, top_k: int = 100):
             print("⚠️ Still! No relevant documents found in Pinecone.") 
 
     print("Retrieved chunks: ")  
-    print(retrieve_chunks)
+    print(retrieved_chunks)
     return retrieved_chunks
 
 from transformers import GPT2TokenizerFast
@@ -140,12 +112,12 @@ tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 
 def truncate_prompt(conversation_part: str, document_part: str, query: str, max_tokens: int = 128000) -> str:
     """
-    Constructs a prompt from conversation history, document content, and query.
-    
+    This function is to check if the prompt length exceeds max token limit
+
     If the conversation history plus query exceed max_tokens,
     the conversation history will be dropped, preserving only the query.
     
-    If the document part exceeds the allowed token count, the last part of the document is preserved.
+    If the document part exceeds the allowed token count, the latest part of the document is preserved.
     """
     # Construct the non-document part: conversation history + "Query: {query}\nAnswer:"
     non_doc_text = conversation_part + f"Query: {query}\nAnswer:"
@@ -169,14 +141,14 @@ def truncate_prompt(conversation_part: str, document_part: str, query: str, max_
     doc_count = len(doc_tokens)
     
     if allowed_doc_tokens < 0:
-        # This should not happen, but if it does, return a truncated version of the non-document part.
+        # Prevent user entering long query maliciously, by returning a truncated version of the non-document part.
         print("Warning: Non-document part exceeds max tokens even after dropping conversation!")
         truncated_non_doc = tokenizer.decode(non_doc_tokens[:max_tokens])
         return truncated_non_doc
     else:
         if doc_count > allowed_doc_tokens:
             print('Warning: Document part exceeds max token, document length: ', doc_count, ', allowed document tokens: ', allowed_doc_tokens, 'truncating document part')
-            # Instead of keeping the first tokens, keep the last allowed_doc_tokens tokens from the document.
+            # keep the latest allowed_doc_tokens tokens from the document.
             truncated_doc_tokens = doc_tokens[-allowed_doc_tokens:]
             truncated_doc = tokenizer.decode(truncated_doc_tokens)
         else:
@@ -189,11 +161,15 @@ def truncate_prompt(conversation_part: str, document_part: str, query: str, max_
 
 
 def prepare_prompt(classification, retrieved_chunks: list):
+    """
+    This function is for combining conversation history, retrieved paper chunks and user query into a text prompt
+    """
     # Retrieve conversation history
     history_text = "\n".join(conversation_history[-10:])
     conversation_part = f"Conversation history:\n{history_text}\n\n" if history_text else ""
     query = classification['question']
 
+    # retrieve paper chunks and metadata
     memory_text = "\n\n".join([
         f"Paper Title: {chunk.get('title', 'Unknown title')}\n"
         f"Author: {chunk.get('author', 'Unknown author')}\n"
@@ -217,6 +193,9 @@ def prepare_prompt(classification, retrieved_chunks: list):
     return prompt
 
 def answer_query(classification, index_obj, top_k: int = 100, use_memory: bool = False):
+    """
+    function for retrieving paper chunks from pinecone, and passing formatted text prompt into LLM
+    """
     query = classification["question"]
     retrieved_chunks = retrieve_chunks(classification, index_obj, top_k)
     
@@ -232,6 +211,8 @@ def answer_query(classification, index_obj, top_k: int = 100, use_memory: bool =
     conversation_history.append(f"Query: {query}\nAnswer: {answer}")
     return answer
 
+
 def clear_memory():
+    # clear the user conversation history when user exit
     conversation_history.clear() 
     print("Memory cleared.")
