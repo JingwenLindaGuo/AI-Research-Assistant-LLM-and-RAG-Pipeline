@@ -1,5 +1,5 @@
 import pytest
-from integration.retrieval import (
+from backend.retrieval import (
     parse_date,
     get_embedding_count,
     retrieve_chunks,
@@ -56,7 +56,7 @@ def fake_index():
 # Override the embed function in retrieval.py with our fake_embed.
 @pytest.fixture(autouse=True)
 def override_embed(monkeypatch):
-    monkeypatch.setattr("integration.retrieval.embed", fake_embed)
+    monkeypatch.setattr("backend.retrieval.embed", fake_embed)
 
 # Clear global memory before each test.
 @pytest.fixture(autouse=True)
@@ -123,7 +123,7 @@ def test_answer_query(monkeypatch, fake_index):
     def fake_invoke(self, prompt, *args, **kwargs):
         return "Simulated answer based on prompt: " + prompt
 
-    monkeypatch.setattr("integration.retrieval.ChatOpenAI.invoke", fake_invoke)
+    monkeypatch.setattr("backend.retrieval.ChatOpenAI.invoke", fake_invoke)
     
     # Create a fake classification input.
     classification = {"question": "What is ML?", "filters": {}}
