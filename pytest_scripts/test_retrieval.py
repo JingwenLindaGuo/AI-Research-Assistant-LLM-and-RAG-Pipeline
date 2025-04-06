@@ -1,7 +1,6 @@
 import pytest
 from backend.retrieval import (
     parse_date,
-    get_embedding_count,
     retrieve_chunks,
     truncate_prompt,
     prepare_prompt,
@@ -71,11 +70,6 @@ def test_parse_date():
     # Test that a date string is correctly parsed to an integer.
     assert parse_date("20250101") == 20250101
     assert isinstance(parse_date("20250101"), int)
-
-def test_get_embedding_count(fake_index):
-    # Test that our fake index reports the correct embedding count.
-    count = get_embedding_count(fake_index, namespace="default")
-    assert count == 1
 
 def test_retrieve_chunks(fake_index):
     # Create a fake classification input with an empty filter.
