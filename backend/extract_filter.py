@@ -3,10 +3,16 @@ from dotenv import load_dotenv
 import json
 import os
 
-# Load environment variables
-load_dotenv()
+"""
+Description:
+This script extracts academic research filters from user's query, using GPT-4o-mini model. 
+It performs the following tasks: 
+- Defines a SYSTEM_PROMPT that classify user queries as "search" or "other" and extract structured filters in JSON format for academic research.
+- Implements the classify_and_extract() function to send the query to the model and parse the response into a structured JSON format following a predefined schema.
+"""
 
-# Setup clients
+
+load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 SYSTEM_PROMPT = """\

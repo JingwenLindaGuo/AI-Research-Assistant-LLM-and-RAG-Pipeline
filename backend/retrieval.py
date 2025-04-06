@@ -8,6 +8,26 @@ from langchain_community.chat_models import ChatOpenAI # supposedly the new,corr
 #from langchain_openai import ChatOpenAI
 #from langchain.chat_models import ChatOpenAI    
 from time import sleep
+
+
+"""
+Description:
+This script implements a retrieval-based question answering system using Pinecone and an LLM. It:
+- Embeds text with OpenAIEmbeddings.
+- Retrieves document chunks from Pinecone with metadata filters.
+- Manages token limits via GPT2TokenizerFast.
+- Builds prompts from conversation history, retrieved documents, and user queries.
+- Generates responses with ChatOpenAI.
+- Maintains conversation history.
+
+Usage:
+- retrieve_chunks(): Fetch relevant documents.
+- prepare_prompt(): Construct the query prompt.
+- answer_query(): Generate an answer.
+- clear_memory(): Reset conversation history.
+"""
+
+
 # Initialize the Pinecone client using the API key from environment variables
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
