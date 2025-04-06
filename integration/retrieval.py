@@ -4,7 +4,7 @@ import os
 from langchain_community.embeddings import OpenAIEmbeddings # supposedly the new,correct import
 from pinecone import Pinecone
 # from integration.Embedder import embed # for script
-from Embedder import embed # for notebook
+from integration.Embedder import embed
 from langchain_community.chat_models import ChatOpenAI # supposedly the new,correct import
 #from langchain_openai import ChatOpenAI
 #from langchain.chat_models import ChatOpenAI    
@@ -219,11 +219,6 @@ def prepare_prompt(classification, retrieved_chunks: list):
 
 def answer_query(classification, index_obj, top_k: int = 100, use_memory: bool = False):
     query = classification["question"]
-    # if use_memory:
-    #     # Combine previously stored document memory with fresh retrieval
-    #     new_retrieval = retrieve_chunks(query, index_obj, top_k)
-    #     retrieved_chunks = document_memory + new_retrieval
-    # else:
     retrieved_chunks = retrieve_chunks(classification, index_obj, top_k)
     
     prompt = prepare_prompt(classification, retrieved_chunks) 

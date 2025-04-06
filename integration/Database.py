@@ -2,7 +2,7 @@ from pinecone import Pinecone, ServerlessSpec
 from dotenv import load_dotenv
 import os
 # from integration.Embedder import embed # for script
-from Embedder import embed # for notebook
+from integration.Embedder import embed # for notebook
 import random
 import string
 import uuid
