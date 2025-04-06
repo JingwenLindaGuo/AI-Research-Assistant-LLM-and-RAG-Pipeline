@@ -2,6 +2,14 @@ from langchain_community.document_loaders import PyPDFLoader
 from Database import save_embeddings_to_index
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
+"""
+Description:
+This script processes user-uploaded PDFs by loading the file, splitting it into text chunks, 
+and storing the embedded results into a Pinecone index. It uses LangChain for PDF loading 
+and text splitting, and a custom save_embeddings_to_index function to upload the data.
+"""
+
+
 def chunk_documents(documents, chunk_size=500, overlap=100):
     """
     Accepts LangChain Documents (e.g., from PyPDFLoader),

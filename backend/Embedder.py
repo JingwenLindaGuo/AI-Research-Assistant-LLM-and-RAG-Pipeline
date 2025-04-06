@@ -2,6 +2,11 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
+"""
+Description:
+This script uses OpenAI's API to generate embeddings for input text using the "text-embedding-3-small" model.
+"""
+
 # Load environment variables
 load_dotenv()
 
@@ -9,7 +14,6 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def embed(data):
-
     text_inputs = [d['text'] for d in data] if isinstance(data, list) else [data]
 
     response = client.embeddings.create(
