@@ -11,9 +11,9 @@ It performs the following tasks:
 - Implements the classify_and_extract() function to send the query to the model and parse the response into a structured JSON format following a predefined schema.
 """
 
-
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 
 SYSTEM_PROMPT = """\
 You are a helpful assistant for academic research. Your task is to determine whether the user's request falls under one of two categories:

@@ -4,6 +4,14 @@ import time
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
+
+"""
+Description:
+This script searches for papers on ArXiv based on given filters, checks if results match the criteria,
+downloads their PDFs, extracts and splits their content into chunks with metadata (title, author, date).
+"""
+
+
 def format_query(filters):
     """ Builds an ArXiv API query string from filter dictionary. """
     if filters.get('query'):
@@ -34,6 +42,7 @@ def format_query(filters):
     query_str = " AND ".join(search_parts)  # Combine with AND
     return query_str
 
+
 def fetch_papers(filters):
     """ Fetches academic papers from ArXiv based on filters. """
     search_query = format_query(filters)  # Build query
@@ -51,6 +60,7 @@ def fetch_papers(filters):
     results = list(client.results(search))
     return results
 
+# a global variable that stores titles of paper retrieved
 stored_paper_titles = set()
 
 def verify_results(results, filters):
@@ -74,7 +84,7 @@ def verify_results(results, filters):
         # Check filter matches
         match_results = {
             "Author Match": filters.get('author') is None or any(filters.get('author', '').lower() in a.lower() for a in paper_author_list),
-            # "Title Match": filters.get('title') is None or filters.get('title', '').lower() in paper_title.lower(),  # to allow vague search for title
+            # "Title Match": filters.get('title') is None or filters.get('title', '').lower() in paper_title.lower(),  # commented out to allow vague search for title
             "Category Match": filters.get('category') is None or filters.get('category') in paper_category,
             "Abstract Match": filters.get('abstract') is None or filters.get('abstract', '').lower() in paper_abstract.lower(),
             "Exclusion (NOT)": filters.get('exclude_words') is None or filters.get('exclude_words', '').lower() not in paper_title.lower(),
@@ -111,7 +121,6 @@ def chunk_papers(results):
                 papers = loader.load()
                 # Combine the text from all pages
                 full_text = " ".join(p.page_content for p in papers)
-                # Use smaller chunks with more overlap for capturing details
                 text_splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=100)
                 paper_chunks = text_splitter.create_documents([full_text])
 
@@ -140,5 +149,6 @@ def chunk_papers(results):
     return all_chunks
 
 def clear():
+    # this function clears the retrieved paper history
     global stored_paper_titles
     stored_paper_titles.clear()
