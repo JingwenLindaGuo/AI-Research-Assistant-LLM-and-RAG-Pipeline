@@ -202,7 +202,7 @@ def prepare_prompt(classification, retrieved_chunks: list):
         f"Text Chunk: {chunk.get('text', 'No text available')}"
         for chunk in retrieved_chunks
     ])
-    document_part = f"Documents Provided:\n{memory_text}\n\n" if memory_text else ""
+    document_part = f"Documents Provided:\n{memory_text}\n\n" if memory_text else "No Relevant documents found through the input query\n\n"
     
     prompt = (
         f"{conversation_part}"
