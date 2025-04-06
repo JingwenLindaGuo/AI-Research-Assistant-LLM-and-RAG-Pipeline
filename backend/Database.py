@@ -1,8 +1,7 @@
 from pinecone import Pinecone, ServerlessSpec
 from dotenv import load_dotenv
 import os
-# from integration.Embedder import embed # for script
-from backend.Embedder import embed # for notebook
+from backend.Embedder import embed
 import random
 import string
 import uuid
@@ -111,5 +110,3 @@ def save_embeddings_to_index(index_name, text, titles, authors, dates, sources, 
         namespace=namespace
     )
     print(f"Upserted {len(vectors)} embeddings into index '{index_name}', namespace '{namespace}'.")
-
-

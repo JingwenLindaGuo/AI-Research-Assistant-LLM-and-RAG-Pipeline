@@ -1,12 +1,8 @@
 import os
-#from langchain_openai import OpenAIEmbeddings
-#from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain_community.embeddings import OpenAIEmbeddings # supposedly the new,correct import
+from langchain_community.embeddings import OpenAIEmbeddings
 from pinecone import Pinecone
 from backend.Embedder import embed
-from langchain_community.chat_models import ChatOpenAI # supposedly the new,correct import
-#from langchain_openai import ChatOpenAI
-#from langchain.chat_models import ChatOpenAI    
+from langchain_community.chat_models import ChatOpenAI
 from time import sleep
 
 
