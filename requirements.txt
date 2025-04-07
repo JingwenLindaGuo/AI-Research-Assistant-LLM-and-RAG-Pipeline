@@ -5,3 +5,6 @@ uvicorn
 openai
 pypdf
 langchain_community
+transformers
+pinecone-client
+pymongo

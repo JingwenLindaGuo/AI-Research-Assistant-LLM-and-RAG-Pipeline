@@ -1,122 +1,104 @@
 import os
 from time import sleep
-os.environ["PINECONE_API_KEY"] = "pcsk_594Xgb_Qtwvagd2kRcdaJtLSdnXXrnn2RN81sRkGZyJYCqQmiEJY1iw6rDdNATRvSmfkCZ"
-print("Pinecone API Key:", os.getenv("PINECONE_API_KEY"))
-# from Search_or_Discuss import classify_and_extract
+
 from backend.extract_filter import classify_and_extract
-from backend.data_utils import fetch_papers, verify_results, chunk_papers
+from backend.data_utils import fetch_papers, verify_results, chunk_papers, format_query
 from backend.Database import create_index, save_embeddings_to_index, delete_index
 from backend.retrieval import answer_query, clear_memory
 from pinecone import Pinecone
+
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
+# Create the index once (for the current session)
 index_name = create_index()
 index_obj = pc.Index(index_name)
+
 
 def handleUserQuery(user_input: str) -> dict:
     """
     This function replicates your notebook's handleUserQuery logic without an infinite loop.
-    
-    It classifies the user input into two actions:
-      1) "search": It fetches academic papers from Arxiv using the provided filters,
-         verifies the results, and then returns a formatted string that lists the titles
-         and abstracts of the top N papers (where N is specified by filters' "max_results",
-         or defaults to 1 if not provided).
-         
-      2) "discuss": It calls the retrieval + LLM pipeline to generate a discussion answer,
-         converts the answer to a plain string, and returns it.
-         
-    The returned dictionary always includes an "assistant_message" key that your FastAPI
-    endpoint and UI will display.
+
+    It first classifies the user input into two actions:
+      1) "search": Fetches academic papers from Arxiv using the provided filters,
+         verifies the results, embeds the full paper text chunks (with metadata) into Pinecone,
+         and then calls the retrieval+LLM pipeline to generate a summary answer.
+      2) "discuss": Uses the retrieval+LLM pipeline to generate a discussion answer.
+
+    The returned dictionary always includes an "assistant_message" key that your FastAPI endpoint and UI will display.
     """
+    # Classify the input
     classification = classify_and_extract(user_input)
+    print("Classification result:", classification)
     action = classification.get("action", "error")
-    
-    if action == "search":
-        filters = classification.get("filters", {})
-        print(f"[integration] SEARCH with filters: {filters}")
-        
-        # Step 1: Fetch papers from Arxiv
-        papers = fetch_papers(filters)
-        verified_papers = verify_results(papers, filters)
-        print(f"[integration] Found {len(verified_papers)} verified paper(s).")
-        
-        # Determine number of papers to return; default to 1 if not provided
-        try:
-            num_papers = int(filters.get("max_results", 1))
-        except ValueError:
-            num_papers = 1
-        num_papers = min(num_papers, len(verified_papers))
-        
-        # Format the title and abstract for each of the top papers
-        formatted_results = []
-        for i in range(num_papers):
-            paper = verified_papers[i]
-            # Format: "Paper X: Title: ... Abstract: ..."
-            formatted_results.append(
-                f"Paper {i+1}:\nTitle: {paper.title}\nAbstract: {paper.summary}"
+
+    # If no valid academic query (i.e. no filters) is detected, use the "discuss" branch.
+    if not format_query(classification.get("filters", {})):
+        question = classification.get("question", "")
+        raw_answer = answer_query(classification, index_obj, top_k=100)
+        answer_str = raw_answer.content if hasattr(raw_answer, "content") else str(raw_answer)
+        print("Generated Answer (discuss branch):", answer_str)
+        return {"action": "discuss", "assistant_message": answer_str}
+
+    # --- SEARCH branch ---
+    filters = classification.get("filters", {})
+    print("\nRunning SEARCH with filters:", filters)
+
+    # Step 1: Fetch papers from Arxiv
+    papers = fetch_papers(filters)
+    verified_papers = verify_results(papers, filters)
+    print(f"[integration] Found {len(verified_papers)} verified paper(s).")
+
+    # Determine number of papers to return; default to 1 if not provided
+    try:
+        num_papers = int(filters.get("max_results", 1))
+    except ValueError:
+        num_papers = 1
+    num_papers = min(num_papers, len(verified_papers))
+
+    # Step 2: Chunk papers (retrieve full text chunks with metadata)
+    chunks = chunk_papers(verified_papers[:num_papers])
+    texts = [chunk.get("text", "") for chunk in chunks]
+    # (Optional: you can extract titles, authors, dates if needed for metadata)
+    titles = [chunk.get("title", "Unknown Title") for chunk in chunks]
+    authors = [chunk.get("author", ["unknown"]) for chunk in chunks]
+    dates = [chunk.get("date", "unknown") for chunk in chunks]
+
+    print("Extracted texts:")
+    print(texts)
+
+    # Step 3: Embed the full paper text chunks into Pinecone in batches
+    if texts:
+        batch_size = 200
+        for i in range(0, len(texts), batch_size):
+            print("Processing batch starting at index:", i)
+            text_batch = texts[i:i+batch_size]
+            title_batch = titles[i:i+batch_size]
+            author_batch = authors[i:i+batch_size]
+            date_batch = dates[i:i+batch_size]
+            source_batch = ["arxiv"] * len(text_batch)
+            save_embeddings_to_index(
+                index_name=index_name,
+                text=text_batch,
+                titles=title_batch,
+                authors=author_batch,
+                dates=date_batch,
+                sources=source_batch,
+                namespace="default"
             )
-        
-        result_text = "\n\n".join(formatted_results)
-        
-        #embed the paper texts for retrieval later:
-        #for paper in verified_papers[:num_papers]:
-             # For embedding purposes, use the full text if available (or abstract)
-        #     save_embeddings_to_index(index_name, [paper.summary])
-        
-
-                # Embed full paper chunks instead of just abstracts
-        
-        ######################################################################
-        ##### This is where you would embed the full paper text chunks #######
-        ######################################################################
-
-        chunks = chunk_papers(verified_papers[:num_papers])  # Get full paper content as chunks
-        texts = [chunk["text"] for chunk in chunks]  # Extract just the text
-
-        #TODO：does it work
-        if texts:
-            # Save the full paper text chunks to the index
-            batch_size = 200
-            for i in range(0, len(texts), batch_size):
-                text_batch = texts[i:i+batch_size] 
-                save_embeddings_to_index(index_name=index_name, text=text_batch)
             sleep(1)
 
-        #TODO: answer search question
-        return {
-            "action": "search",
-            "assistant_message": result_text,
-            "paper_count": len(verified_papers),
-            "message": "Search complete; returning top papers with titles and abstracts."
-        }
-    
-    elif action == "discuss":
-        question = classification.get("question", "")
-        print(f"[integration] DISCUSS question: {question}")
-        
-        # Run the retrieval + LLM generation pipeline
-        raw_answer = answer_query(question, index_obj, top_k=3)
-        print("[integration] Generated LLM answer:", raw_answer)
-        
-        # Convert answer to a plain string in case it's an AIMessage or custom object
-        if hasattr(raw_answer, "content"):
-            answer_str = raw_answer.content
-        else:
-            answer_str = str(raw_answer)
-            
-        return {
-            "action": "discuss",
-            "assistant_message": answer_str
-        }
-    
-    else:
-        print("[integration] Action not recognized or invalid JSON from classification.")
-        return {
-            "action": "error",
-            "assistant_message": "Action not recognized by the pipeline.",
-            "message": "Please try again."
-        }
+    # Finally, generate a response using the retrieval+LLM pipeline
+    raw_answer = answer_query(classification, index_obj, top_k=100)
+    print("Generated Answer (search branch):", raw_answer)
+    answer_str = raw_answer.content if hasattr(raw_answer, "content") else str(raw_answer)
+
+    return {
+        "action": "search",
+        "assistant_message": answer_str,
+        "paper_count": len(verified_papers),
+        "message": "Search complete; returning generated answer."
+    }
+
 
 def cleanup_index():
     """

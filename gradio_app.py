@@ -240,7 +240,7 @@ def main():
         # Initialize the UI to show "login_container" by default
         update_ui(False, False)
 
-    demo.launch(share=True, server_port=7860)
+    demo.launch(server_port=7860)
 
 if __name__ == "__main__":
     main()
