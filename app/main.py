@@ -8,8 +8,8 @@ from typing import Optional
 from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
-from integration.integration import handleUserQuery, index_name
-from integration.integration import cleanup_index
+from backend.integration import handleUserQuery, index_name
+from backend.integration import cleanup_index
 
 
 # Load environment variables

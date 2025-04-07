@@ -89,7 +89,7 @@ def save_embeddings_to_index(index_name, text, titles, authors, dates, sources, 
     # Embed the data
     embeddings = embed(data_with_ids)
 
-    # Prepare vectors for upsert
+    # Prepare vectors for upsert with metadata
     vectors = []
     for d, e in zip(data_with_ids, embeddings):
         vectors.append({
