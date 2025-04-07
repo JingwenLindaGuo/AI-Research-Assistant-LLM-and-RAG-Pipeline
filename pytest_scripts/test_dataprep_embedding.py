@@ -1,5 +1,5 @@
 from dataprep.data_prep import *
-from integration.extract_filter import classify_and_extract
+from backend.extract_filter import classify_and_extract
 
 # Test that classify_and_extract correctly parses a natural language query into filter fields
 def test_classification():
