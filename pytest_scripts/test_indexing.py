@@ -64,3 +64,15 @@ def test_create_index(fake_pc, monkeypatch):
     assert "xxxxxxxxxx" in fake_pc.indexes
     # Also, check that create_index logged the call.
     assert any(item[0] == "xxxxxxxxxx" for item in fake_pc.created_indexes)
+
+def test_delete_index(fake_pc, capsys):
+    # Add an index to delete.
+    fake_pc.indexes.append("testindex")
+    backend.Database.delete_index("testindex")
+    # After deletion, the index should no longer be in the fake client's indexes.
+    assert "testindex" not in fake_pc.indexes
+
+    # Test deleting a index that does not exist
+    backend.Database.delete_index("nonexistent")
+    captured = capsys.readouterr().out
+    assert "does not exist" in captured  # Check that an error message was printed.
