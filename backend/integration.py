@@ -1,7 +1,5 @@
 import os
 from time import sleep
-os.environ["PINECONE_API_KEY"] = "pcsk_594Xgb_Qtwvagd2kRcdaJtLSdnXXrnn2RN81sRkGZyJYCqQmiEJY1iw6rDdNATRvSmfkCZ"
-print("Pinecone API Key:", os.getenv("PINECONE_API_KEY"))
 
 from backend.extract_filter import classify_and_extract
 from backend.data_utils import fetch_papers, verify_results, chunk_papers, format_query
