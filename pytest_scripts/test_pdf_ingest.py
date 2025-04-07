@@ -9,7 +9,7 @@ def test_pdf_path():
 
 @pytest.fixture
 def pinecone_index_name():
-    return "uploadpdftest2"
+    return "ou7oa7nxqn"
 
 def test_pdf_ingestion_runs(test_pdf_path, pinecone_index_name):
     assert os.path.exists(test_pdf_path), "Test PDF file does not exist"

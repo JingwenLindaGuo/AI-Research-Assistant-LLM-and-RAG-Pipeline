@@ -1,5 +1,5 @@
 from langchain_community.document_loaders import PyPDFLoader
-from Database import save_embeddings_to_index
+from backend.Database import save_embeddings_to_index
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 """
@@ -44,8 +44,8 @@ def ingest_uploaded_pdf(file_path: str, user_index: str):
     for i, chunk in enumerate(chunks):
         texts.append("\n from user's uploaded PDF file: " + chunk.page_content)
         titles.append(filename)             # or "Uploaded PDF"
-        authors.append("Unknown")           # no author info in uploaded PDFs
-        dates.append("N/A")                # static or parsed if you want
+        authors.append([])           # no author info in uploaded PDFs
+        dates.append("00000000")                # static or parsed if you want
         sources.append("uploaded_pdf")      # to distinguish from 'arxiv'
 
     print(f"Storing {len(chunks)} chunks to index: {user_index}")
