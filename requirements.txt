@@ -1,4 +1,0 @@
-fastapi
-gradio
-pydantic
-uvicorn

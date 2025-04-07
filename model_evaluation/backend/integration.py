@@ -2,10 +2,10 @@ import os
 os.environ["PINECONE_API_KEY"] = "pcsk_594Xgb_Qtwvagd2kRcdaJtLSdnXXrnn2RN81sRkGZyJYCqQmiEJY1iw6rDdNATRvSmfkCZ"
 print("Pinecone API Key:", os.getenv("PINECONE_API_KEY"))
 # from Search_or_Discuss import classify_and_extract
-from integration.Search_or_Discuss import classify_and_extract
-from integration.data_utils import fetch_papers, verify_results, chunk_papers
-from integration.Database import create_index, save_embeddings_to_index, delete_index
-from integration.retrieval import answer_query, clear_memory
+from Model_Evaluation.Search_or_Discuss import classify_and_extract
+from Model_Evaluation.data_utils import fetch_papers, verify_results, chunk_papers
+from Model_Evaluation.Database import create_index, save_embeddings_to_index, delete_index
+from Model_Evaluation.retrieval import answer_query, clear_memory
 from pinecone import Pinecone
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
