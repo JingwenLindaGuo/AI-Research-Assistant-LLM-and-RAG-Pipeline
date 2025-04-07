@@ -1,5 +1,10 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import pytest
-from lgp.group3.backend.Embedder import embed, client
+import backend.Embedder
+from backend.Embedder import embed, client
 from types import SimpleNamespace
 
 class FakeEmbeddings:
@@ -12,8 +17,7 @@ class FakeEmbeddings:
 def dummy_client(monkeypatch):
     # Create and replace the client with a fake one
     fake_client = SimpleNamespace(embeddings=FakeEmbeddings())
-    # Client path needs to be changed to the path of the Embedder file on the users pc
-    monkeypatch.setattr("lgp.group3.backend.Embedder.client", fake_client)
+    monkeypatch.setattr(backend.Embedder, "client", fake_client)
     yield
 
 def test_embed_with_list():
