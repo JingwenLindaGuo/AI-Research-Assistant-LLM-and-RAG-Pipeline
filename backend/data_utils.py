@@ -15,9 +15,13 @@ downloads their PDFs, extracts and splits their content into chunks with metadat
 def format_query(filters):
     """ Builds an ArXiv API query string from filter dictionary. """
 
-    search_parts = []
     if filters.get('query'):
-        search_parts.append(filters.get('query'))
+        search_parts = [filters.get('query')]  # Base query
+    else:
+        # If query is not detected, return 0 and skip paper search part
+        print("Query not detected")
+        return 0
+        
     if filters.get('author'):
         search_parts.append(f'au:"{filters["author"]}"')  
     if filters.get('title'):
