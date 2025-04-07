@@ -63,7 +63,7 @@ For "other" actions:
     "max_results": "<Maximum results or 1>",
     "sort_by": "<'relevance' or 'newest'>"
   },
-  "question": "<The user's request for retrieved data>"
+  "question": "<The user's original input>"
 }
 
 ## INSTRUCTIONS (apply carefully for each field):

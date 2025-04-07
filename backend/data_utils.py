@@ -17,6 +17,7 @@ def format_query(filters):
     if filters.get('query'):
         search_parts = [filters.get('query')]  # Base query
     else:
+        # if user do not enter an academic query, like greeting
         print("Query not detected")
         return 0
     
