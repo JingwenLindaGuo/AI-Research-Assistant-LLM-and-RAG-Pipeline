@@ -8,3 +8,6 @@ langchain_community
 transformers
 pinecone-client
 pymongo
+numpy
+pytest
+arxiv
