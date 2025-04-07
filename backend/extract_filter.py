@@ -30,7 +30,7 @@ For "search" actions:
 {
   "action": "search",
   "filters": {
-    "query": "<Main search topic>",
+    "query": "<Main search topic or null>",
     "author": "<Author name or null>",
     "title": "<Title keyword or null>",
     "category": "<Research category code or null>",

@@ -1,4 +1,4 @@
-from dataprep.data_prep import *
+from backend.data_utils import *
 
 standard_filters = {
     "query": "Deep Learning",
@@ -98,7 +98,7 @@ def test_paper_chunking():
     papers = fetch_papers(standard_filters)
     paper_chunks = chunk_papers(papers)
 
-    assert all(0 < len(chunk.page_content) <= chunk_size for chunk in paper_chunks)
+    assert all(0 < len(chunk['text']) <= chunk_size for chunk in paper_chunks)
 
 # Test chunk_papers skips non-PDF papers
 def test_chunk_papers_skips_non_pdf():
