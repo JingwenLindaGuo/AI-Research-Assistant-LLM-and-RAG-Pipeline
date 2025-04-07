@@ -42,7 +42,7 @@ def ingest_uploaded_pdf(file_path: str, user_index: str):
     filename = file_path.split("/")[-1]  # or use os.path.basename(file_path)
 
     for i, chunk in enumerate(chunks):
-        texts.append(chunk.page_content)
+        texts.append("\n from user's uploaded PDF: " + chunk.page_content)
         titles.append(filename)             # or "Uploaded PDF"
         authors.append("Unknown")           # no author info in uploaded PDFs
         dates.append("N/A")                # static or parsed if you want

@@ -1,6 +1,6 @@
 import os
 import pytest
-from pdf_ingest import ingest_uploaded_pdf
+from backend.pdf_ingest import ingest_uploaded_pdf
 
 @pytest.fixture
 def test_pdf_path():
