@@ -14,51 +14,47 @@ downloads their PDFs, extracts and splits their content into chunks with metadat
 
 def format_query(filters):
     """ Builds an ArXiv API query string from filter dictionary. """
+
+    search_parts = []
     if filters.get('query'):
-        search_parts = [filters.get('query')]  # Base query
-    else:
-        # if user do not enter an academic query, like greeting
-        print("Query not detected")
-        return 0
-    
+        search_parts.append(filters.get('query'))
     if filters.get('author'):
-        search_parts.append(f'au:"{filters["author"]}"')
+        search_parts.append(f'au:"{filters["author"]}"')  
     if filters.get('title'):
-        search_parts.append(f'ti:"{filters["title"]}"')
+        search_parts.append(f'ti:"{filters["title"]}"')  
     if filters.get('category'):
-        search_parts.append(f'cat:"{filters["category"]}"')
+        search_parts.append(f'cat:"{filters["category"]}"')  
     if filters.get('abstract'):
-        search_parts.append(f'abs:"{filters["abstract"]}"')
+        search_parts.append(f'abs:"{filters["abstract"]}"')  
     if filters.get('journal_ref'):
-        search_parts.append(f'jr:"{filters["journal_ref"]}"')
+        search_parts.append(f'jr:"{filters["journal_ref"]}"')  
     if filters.get('doi'):
-        search_parts.append(f'doi:"{filters["doi"]}"')
+        search_parts.append(f'doi:"{filters["doi"]}"')  
     if filters.get('exclude_words'):
-        search_parts.append(f'NOT "{filters["exclude_words"]}"')
-    if filters.get('start_date') or filters.get('end_date'):
-        start = filters.get('start_date', "*")  # Default to "*"
-        end = filters.get('end_date', "999999999999")  # Default to max value
+        search_parts.append(f'NOT "{filters["exclude_words"]}"')  
+    start = filters.get('start_date') or '*'
+    end = filters.get('end_date') or '99999999'
+    if filters.get('start_date') is not None or filters.get('end_date') is not None:
         search_parts.append(f'submittedDate:[{start} TO {end}]')
-
+    
     query_str = " AND ".join(search_parts)  # Combine with AND
-    return query_str
 
+    return query_str
 
 def fetch_papers(filters):
     """ Fetches academic papers from ArXiv based on filters. """
-    search_query = format_query(filters)  # Build query
-
-    print('search query: ', search_query)
+    
+    search_query = format_query(filters)
 
     # Create ArXiv search object
     client = arxiv.Client()
     search = arxiv.Search(
         query=search_query,
-        max_results=int(filters.get('max_results')),
+        max_results=int(filters.get('max_results', 1)),
         sort_by=arxiv.SortCriterion.Relevance if filters.get('sort_by') == "relevance" else arxiv.SortCriterion.SubmittedDate
     )
 
-    results = list(client.results(search))
+    results = list(client.results(search))  
     return results
 
 # a global variable that stores titles of paper retrieved
