@@ -26,7 +26,7 @@ class FakePinecone:
         else:
             # Simulate behavior when deletion fails.
             raise Exception("Index does not exist")
-    def getIndex(self, index_name):
+    def Index(self, index_name):
         # Return a fake index instance that captures upsert calls.
         return FakeIndex(index_name)
     
@@ -44,8 +44,7 @@ class FakeIndex:
 
 # fake embed function that simulates embedding by returning the length of the text.
 def fake_embed(input):
-    data = [SimpleNamespace(embedding=[len(text)]) for text in input]
-    return SimpleNamespace(data=data)
+    return [{"values": [len(item["text"])]} for item in input]
 
 @pytest.fixture
 def fake_pc(monkeypatch):
@@ -76,3 +75,35 @@ def test_delete_index(fake_pc, capsys):
     backend.Database.delete_index("nonexistent")
     captured = capsys.readouterr().out
     assert "does not exist" in captured  # Check that an error message was printed.
+
+def test_save_embeddings_to_index(fake_pc, monkeypatch):
+    # Create fake input data.
+    texts = ["text1", "text2"]
+    titles = ["Title1", "Title2"]
+    authors = [["Author1"], ["Author2"]]
+    dates = ["2020", "2021"]
+    sources = ["source1", "source2"]
+
+    # Create a fake index object by calling the Index method on fake_pc.
+    fake_index = fake_pc.Index("fake_index")
+    
+    monkeypatch.setattr(fake_pc, "Index", lambda index_name: fake_index)
+    monkeypatch.setattr(backend.Database,"embed", fake_embed)
+    
+    backend.Database.save_embeddings_to_index("fake_index", texts, titles, authors, dates, sources)
+    
+    assert fake_index.upsert_called is True
+    assert fake_index.upsert_namespace == "default"
+
+    # Verify that the vectors list has the expected length.
+    assert len(fake_index.upsert_vectors) == 2
+
+    vectors = fake_index.upsert_vectors
+    
+    expected_text = f"'{texts[0]}'\ntext from {titles[0]}\nauthored by {', '.join(authors[0])}"
+    expected_title = titles[0].lower()
+    expected_embedding = [len(expected_text)]  
+    
+    assert vectors[0]["metadata"]["text"] == expected_text
+    assert vectors[0]["metadata"]["title"] == expected_title
+    assert vectors[0]["values"] == expected_embedding
