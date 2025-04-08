@@ -37,7 +37,10 @@ def register_user(username, password, confirm_password):
 def submit_message(user_message, chat_history, session):
     if not session.get("logged_in"):
         return "Error: You must be logged in to chat.", chat_history, chat_history
-
+    # check if user_message is empty
+    if not user_message.strip():
+        return "Error, please enter a message.", chat_history, chat_history
+    
     token = session.get("access_token")
     headers = {"Authorization": f"Bearer {token}"}
     payload = {"user_message": user_message}
