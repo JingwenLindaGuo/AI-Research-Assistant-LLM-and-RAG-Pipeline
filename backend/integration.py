@@ -80,7 +80,7 @@ def handleUserQuery(user_input: str, user_index: str) -> dict:
             date_batch = dates[i:i+batch_size]
             source_batch = ["arxiv"] * len(text_batch)
             save_embeddings_to_index(
-                index_name=index_name,
+                index_name=user_index,
                 text=text_batch,
                 titles=title_batch,
                 authors=author_batch,

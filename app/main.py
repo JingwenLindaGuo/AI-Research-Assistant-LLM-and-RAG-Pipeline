@@ -94,6 +94,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+
 @app.post("/register")
 def register_user(req: RegisterRequest):
     # New validation: ensure the username is provided and is at least 5 characters long
@@ -180,6 +181,6 @@ def get_chat_history(username: str = Depends(get_current_user)):
 # Clear chat history endpoint
 @app.delete("/clear_chat")
 def clear_chat(username: str = Depends(get_current_user)):
-    result = chat_log_collection.delete_one({"username": username})
+    result = chat_log_collection.delete_many({"username": username})
 
     return {"message": "Chat history cleared", "deleted_count": result.deleted_count}
