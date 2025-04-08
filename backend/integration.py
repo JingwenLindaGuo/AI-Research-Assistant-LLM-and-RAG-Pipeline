@@ -14,7 +14,7 @@ index_name = create_index()
 index_obj = pc.Index(index_name)
 
 
-def handleUserQuery(user_input: str) -> dict:
+def handleUserQuery(user_input: str, user_index: str) -> dict:
     """
     This function replicates your notebook's handleUserQuery logic without an infinite loop.
 
@@ -26,6 +26,9 @@ def handleUserQuery(user_input: str) -> dict:
 
     The returned dictionary always includes an "assistant_message" key that your FastAPI endpoint and UI will display.
     """
+    # Instantiate the index object for this session's index.
+    index_obj = pc.Index(user_index)
+
     # Classify the input
     classification = classify_and_extract(user_input)
     print("Classification result:", classification)
@@ -99,12 +102,10 @@ def handleUserQuery(user_input: str) -> dict:
         "message": "Search complete; returning generated answer."
     }
 
-
-def cleanup_index():
+def cleanup_index(user_index):
     """
-    Called from main.py on shutdown (or as needed) to delete the ephemeral Pinecone index
-    and clear any cached retrieval memory.
+    Delete the ephemeral Pinecone index for the given user and clear any cached retrieval memory.
     """
-    delete_index(index_name)
+    delete_index(user_index)
     clear_memory()
-    print(f"[integration] Ephemeral index '{index_name}' has been cleaned up.")
+    print(f"[integration] Ephemeral index '{user_index}' has been cleaned up.")
