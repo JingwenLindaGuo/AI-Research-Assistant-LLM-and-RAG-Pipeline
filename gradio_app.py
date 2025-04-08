@@ -2,6 +2,7 @@ import gradio as gr
 import requests
 from backend.pdf_ingest import ingest_uploaded_pdf
 from backend.integration import index_name, cleanup_index
+from backend.data_utils import clear
 API_URL = "http://127.0.0.1:8000"  # FastAPI server URL
 
 ########################
@@ -52,8 +53,11 @@ def submit_message(user_message, chat_history, session):
 
 def logout_user(session):
     user_index = session.get("index_name")
-    
+
     cleanup_index(user_index)  # pass the user-specific index name for deletion
+
+    #clear paper cache
+    clear() 
 
     session["logged_in"] = False
     session["access_token"] = None
