@@ -198,7 +198,7 @@ def prepare_prompt(classification, retrieved_chunks: list):
     prompt = (
         f"{conversation_part}"
         f"{document_part}"
-        f"Query: {query}\nAnswer:"
+        f"Latest User Input: {query}\nAnswer to Latest User Input:"
     )
     print("\nPrompt passed to LLM:")
     print(prompt)
@@ -224,7 +224,7 @@ def answer_query(classification, index_obj, top_k: int = 100, use_memory: bool =
         frequency_penalty = 0.0,
         presence_penalty = 0.0)
     answer = llm.invoke(prompt)
-    conversation_history.append(f"Query: {query}\nAnswer: {answer}")
+    conversation_history.append(f"User Inputed: {query}\nAnswer: {answer}")
     return answer
 
 
