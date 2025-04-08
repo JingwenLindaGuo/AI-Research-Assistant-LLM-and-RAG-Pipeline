@@ -2,6 +2,10 @@ fastapi
 gradio
 pydantic
 uvicorn
+python-dotenv
+passlib
+pyjwt
+requests
 openai
 pypdf
 langchain_community
