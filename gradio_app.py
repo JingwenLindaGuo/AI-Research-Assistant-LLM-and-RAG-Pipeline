@@ -1,6 +1,8 @@
 import gradio as gr
 import requests
-
+from backend.pdf_ingest import ingest_uploaded_pdf
+from backend.integration import index_name, cleanup_index
+from backend.data_utils import clear
 API_URL = "http://127.0.0.1:8000"  # FastAPI server URL
 
 ########################
@@ -9,10 +11,6 @@ API_URL = "http://127.0.0.1:8000"  # FastAPI server URL
 
 # A wrapper function for after login now for chat history
 def login_user(username, password, session):
-    """ Login user and store JWT token in session
-    Returns a tuple of (Welcome message, success) 
-    session = {"logged_in": True, "username": "user", "access_token}
-    """
     payload = {"username": username, "password": password}
     response = requests.post(f"{API_URL}/login", json=payload)
 
@@ -20,6 +18,8 @@ def login_user(username, password, session):
         session["logged_in"] = True
         session["username"] = username
         token = response.json()["access_token"]
+        # Also store the index name from the login response
+        session["index_name"] = response.json().get("index_name")
         session["access_token"] = token
         return f"Welcome, {username}!", True
     else:
@@ -52,8 +52,16 @@ def submit_message(user_message, chat_history, session):
     return "", chat_history, chat_history
 
 def logout_user(session):
+    user_index = session.get("index_name")
+
+    cleanup_index(user_index)  # pass the user-specific index name for deletion
+
+    #clear paper cache
+    clear() 
+
     session["logged_in"] = False
     session["access_token"] = None
+    session["index_name"] = None
     return "You have been logged out.", False
 
 def load_chat_history(session):
@@ -85,8 +93,21 @@ def on_clear_chat(session):
         return []
     return []
 
+def process_uploaded_pdf(pdf_file, session):
+    if not pdf_file:
+        return "Please upload a PDF file."
+    if not session.get("logged_in"):
+        return "You must be logged in to upload."
 
+    # Use the index name from the session.
+    user_index = session.get("index_name")
+    file_path = pdf_file.name  # Temporary file name provided by Gradio
 
+    try:
+        chunk_count = ingest_uploaded_pdf(file_path, user_index)
+        return f"Successfully processed and stored {chunk_count} chunks."
+    except Exception as e:
+        return f"Error during PDF ingestion: {str(e)}"
 
 
 
@@ -167,6 +188,17 @@ def main():
             send_button = gr.Button("Send")
             logout_button = gr.Button("Logout")
             logout_output = gr.Textbox(label="Status", interactive=False)
+
+            gr.Markdown("### Upload a PDF to chat about it")
+            pdf_upload = gr.File(label="Upload PDF", file_types=[".pdf"])
+            upload_status = gr.Textbox(label="Upload Status", interactive=False)
+            upload_button = gr.Button("Process PDF")
+
+            upload_button.click(
+                fn=process_uploaded_pdf,
+                inputs=[pdf_upload, session_state],
+                outputs=upload_status
+            )
 
             chatbot.clear(
                 fn=on_clear_chat,

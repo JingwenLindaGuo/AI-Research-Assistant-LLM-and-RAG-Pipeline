@@ -59,25 +59,21 @@ def to_int(s: str) -> int:
     return int(s)
 
 def save_embeddings_to_index(index_name, text, titles, authors, dates, sources, namespace="default"):
-    """
-    this function saves the data retrieved from retrieval.py into pinecone
-    """
     # Retrieve the index instance
     index = pc.Index(index_name)
-
-    # Convert text into a list of dicts with unique IDs
     data_with_ids = []
 
     for t, ti, a, d, s in zip(text, titles, authors, dates, sources):
-        # merge each text chunk with its title and author
+        # Normalize the title and authors to lowercase
+        normalized_title = ti.lower()
+        normalized_authors = [x.lower() for x in a] if a else []
+        # Merge the text chunk with title and author details
         t = f"'{t}'\ntext from {ti}\nauthored by {', '.join(a)}"
-
-        # format data retrieved to fit into pinecone
         data_with_ids.append({
-            "id": str(uuid.uuid4()),  # generate a random UUID
+            "id": str(uuid.uuid4()),
             "text": t,
-            "title": ti.lower(),
-            "author": a,
+            "title": normalized_title,
+            "author": normalized_authors,  # Save lowercased authors
             "date": to_int(d),
             "source": s
         })
