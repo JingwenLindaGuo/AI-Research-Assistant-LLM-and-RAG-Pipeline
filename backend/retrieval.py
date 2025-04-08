@@ -198,7 +198,7 @@ def prepare_prompt(classification, retrieved_chunks: list):
     prompt = (
         f"{conversation_part}"
         f"{document_part}"
-        f"User Input: {query}\nAnswer:"
+        f"Latest User Input: {query}\nAnswer to Latest User Input:"
     )
     print("\nPrompt passed to LLM:")
     print(prompt)
