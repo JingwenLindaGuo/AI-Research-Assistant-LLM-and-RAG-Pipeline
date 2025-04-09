@@ -12,7 +12,8 @@ Our research assistant is deployed on huggingface you can find the link below:
 To use the model you need to create an account and login gain access to the chat interface.
 
 ## Clearml Evaluation
-link to the model evaluation results: https://app.5ccsagap.er.kcl.ac.uk/projects/4581c1b73366408b92ac361df3110a7c/experiments/a58d7c69df8444c291f584f73153a336/info-output/metrics/plots?columns=selected&columns=type&columns=name&columns=tags&columns=status&columns=project.name&columns=users&columns=started&columns=last_update&columns=last_iteration&columns=parent.name&order=-started&filter=
+link to the model evaluation results: 
+[Research Assistant](https://app.5ccsagap.er.kcl.ac.uk/projects/4581c1b73366408b92ac361df3110a7c/experiments/a58d7c69df8444c291f584f73153a336/info-output/metrics/plots?columns=selected&columns=type&columns=name&columns=tags&columns=status&columns=project.name&columns=users&columns=started&columns=last_update&columns=last_iteration&columns=parent.name&order=-started&filter=)
 
 ## Local Deployment
 1. Create a .env file with the following variables:
