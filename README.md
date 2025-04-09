@@ -7,9 +7,7 @@ Our research assistant can help you get up to date with the latest research pape
 ## Deployment 
 Our research assistant is deployed on huggingface you can find the link below:
 
-````
-https://huggingface.co/spaces/abdullah12100/LLM_assistant
-````
+[Research Assistant](https://huggingface.co/spaces/abdullah12100/LLM_assistant)
 
 To use the model you need to create an account and login gain access to the chat interface.
 
