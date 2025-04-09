@@ -1,5 +1,6 @@
 from backend.data_utils import *
 from backend.extract_filter import classify_and_extract
+from pprint import pprint
 
 # Test that classify_and_extract correctly parses a natural language query into filter fields
 def test_classification():
@@ -22,7 +23,7 @@ def test_classification():
     }
 
     for key, value in expected_filters.items():
-        actual = classification['filters'][key]
+        actual = classification['filters'].get(key)
         expected = value
 
         if actual is None or expected is None:
@@ -52,7 +53,7 @@ def test_small_classification():
     }
 
     for key, value in expected_filters.items():
-        actual = classification['filters'][key]
+        actual = classification['filters'].get(key)
         expected = value
 
         if actual is None or expected is None:
@@ -83,10 +84,38 @@ def test_full_classification():
     }
 
     for key, value in expected_filters.items():
-        actual = classification['filters'][key]
+        actual = classification['filters'].get(key)
         expected = value
 
         if actual is None or expected is None:
             assert actual == expected
         else:
             assert actual.lower() == expected.lower()    
+
+def test_future_date():
+    future_query = 'Find me papers on AI from 2026'
+    classification = classify_and_extract(future_query)
+    
+    expected_filters = {
+        "query": 'AI',
+        "author": None,
+        "title": None,
+        "category": None,
+        "abstract": None,
+        "journal_ref": None,
+        "doi": None,
+        "exclude_words": None,
+        "start_date": None,
+        "end_date": None,
+        "max_results": '1',
+        "sort_by": "relevance"
+    }
+
+    for key, value in expected_filters.items():
+        actual = classification['filters'].get(key)
+        expected = value
+
+        if actual is None or expected is None:
+            assert actual == expected
+        else:
+            assert actual.lower() == expected.lower()  

@@ -218,13 +218,13 @@ def answer_query(classification, index_obj, top_k: int = 100, use_memory: bool =
     prompt = prepare_prompt(classification, retrieved_chunks) 
     llm = ChatOpenAI(
         model="gpt-4o-mini",
-        temperature = 0.2,
-        top_p = 1.0,
-        max_tokens = 1000,
-        frequency_penalty = 0.0,
-        presence_penalty = 0.0)
+        temperature = 0.5,
+        top_p = 0.9,
+        max_tokens = 1200,
+        frequency_penalty = 0.1,
+        presence_penalty = 0.1)
     answer = llm.invoke(prompt)
-    conversation_history.append(f"Query: {query}\nAnswer: {answer}")
+    conversation_history.append(f"User Inputed: {query}\nAnswer: {answer}")
     return answer
 
 
