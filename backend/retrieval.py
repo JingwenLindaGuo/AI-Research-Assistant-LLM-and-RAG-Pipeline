@@ -198,7 +198,7 @@ def prepare_prompt(classification, retrieved_chunks: list):
     prompt = (
         f"{conversation_part}"
         f"{document_part}"
-        f"Query: {query}\nAnswer:"
+        f"Query: {query}\nAnswer:(When answering do not provide metadata)\n"
     )
     print("\nPrompt passed to LLM:")
     print(prompt)
