@@ -10,7 +10,7 @@ openai
 pypdf
 langchain_community
 transformers
-pinecone-client
+pinecone
 pymongo
 numpy
 pytest
