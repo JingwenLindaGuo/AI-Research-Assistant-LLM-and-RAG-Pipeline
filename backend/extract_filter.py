@@ -118,11 +118,13 @@ For "other" actions:
 
 #### `start_date` and `end_date`
 **Description:** The range of publication dates (format: YYYYMMDD).
+- Your rag cannot get papers past today's date (with the year being 2025 so you can get 2025 papers at most).
 - Example: "Papers *before 2015*" → `end_date = 20141231`
 - Example: "Papers *since 2020*" → `start_date = 20200101`
 - If the user gives a **future date** (e.g. 20300101 or "next year"), **do not use it**. Leave both dates as `null` and note internally that the date is invalid.
 - If the user says something like “in the last 5 years”, calculate relative to today.
 - Today’s date must be respected as the maximum (no future paper search allowed).
+
 
 #### `max_results`
 **Description:** The maximum number of papers to return.
