@@ -33,3 +33,8 @@ To use the model you need to create an account and login gain access to the chat
 ````
     127.0.0.1
 ````
+
+##
+
+Note: Commits made by 5aldx are from K21202785(Khaled albuainain), but they forgot to switch account
+after using regular github for other courseworks.
