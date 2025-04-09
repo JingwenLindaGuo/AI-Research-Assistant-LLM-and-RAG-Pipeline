@@ -27,11 +27,11 @@ To use the model you need to create an account and login gain access to the chat
 ````
     pip install -r requirements.txt
 ````
-4. Run these two commands each in a seperate terminal:
+4. Use this command to start the chatbot:
 ````
-
+    Python app.py
 ````
 5. Open a window on your browser and go this address:
 ````
-
+    127.0.0.1
 ````
