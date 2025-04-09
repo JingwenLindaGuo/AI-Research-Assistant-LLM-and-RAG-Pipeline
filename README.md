@@ -32,7 +32,7 @@ link to the model evaluation results: https://app.5ccsagap.er.kcl.ac.uk/projects
 ````
     Python app.py
 ````
-5. Open a window on your browser and go this address:
+5. Open a window on your browser and go to this address:
 ````
     127.0.0.1
 ````
