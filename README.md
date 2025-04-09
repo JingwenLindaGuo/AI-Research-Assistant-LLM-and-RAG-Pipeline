@@ -14,3 +14,24 @@ https://huggingface.co/spaces/abdullah12100/LLM_assistant
 To use the model you need to create an account and login gain access to the chat interface.
 
 ## Local Deployment
+1. Create a .env file with the following variables:
+````
+    OPENAI_API_KEY = "place your api key here"
+    PINECONE_API_KEY = "place your api key here"
+````
+2. Create a python virtual environment:
+````
+    Python3.10 -m venv RAvenv
+````
+3. Install the requirements:
+````
+    pip install -r requirements.txt
+````
+4. Run these two commands each in a seperate terminal:
+````
+
+````
+5. Open a window on your browser and go this address:
+````
+
+````
