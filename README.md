@@ -18,12 +18,14 @@ link to the model evaluation results:
 ## Local Deployment
 1. Create a .env file with the following variables:
 ````
-    OPENAI_API_KEY = "place your api key here"
-    PINECONE_API_KEY = "place your api key here"
+    OPENAI_API_KEY="place your api key here"
+    PINECONE_API_KEY="place your api key here"
+    MONGO_URI="place mongodb atlas uri here"
+    SECRET_KEY="place a secret key, can be anything"
 ````
 2. Create a python virtual environment:
 ````
-    Python3.10 -m venv RAvenv
+    Python3.10 -m venv .venv
 ````
 3. Install the requirements:
 ````
@@ -35,7 +37,7 @@ link to the model evaluation results:
 ````
 5. Open a window on your browser and go to this address:
 ````
-    127.0.0.1
+    http://127.0.0.1:7860
 ````
 
 ##
